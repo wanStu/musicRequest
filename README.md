@@ -4,6 +4,7 @@ ThinkPHP 6.0
 > 运行环境要求PHP7.1+，兼容PHP8.0。
 >
 > ###使用插件列表
+> 
 >> 模板引擎
 >>
 >> composer require topthink/think-view
@@ -15,9 +16,13 @@ ThinkPHP 6.0
 >> 逆向数据库迁移工具
 >> 
 >> composer require jaguarjack/migration-generator:dev-master
+> 
 >###如果需要更新框架使用
+> 
 > composer update topthink/framework
+> 
 >###文档
+> 
 > [完全开发手册](https://www.kancloud.cn/manual/thinkphp6_0/content)
 >
 > [模板引擎官方介绍](https://www.kancloud.cn/manual/thinkphp6_0/1037613)
