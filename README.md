@@ -18,6 +18,11 @@ music request
 >> 逆向数据库迁移工具
 >> 
 >> composer require jaguarjack/migration-generator:dev-master
+>>
+>>thinkphp6.0权限扩展
+>>
+>>composer require wenhainan/thinkphp6-auth
+>>
 > 
 >###如果需要更新框架使用
 > 
@@ -34,3 +39,5 @@ music request
 > [逆向数据库迁移工具使用说明](https://github.com/JaguarJack/migration-generator)
 > 
 > [数据库迁移工具使用说明](https://www.kancloud.cn/manual/thinkphp6_0/1118028)
+> 
+> [thinkphp6.0权限扩展使用说明](https://github.com/wenhainan/thinkphp6-auth)

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d78994663e9dbd76f53e023831e0f272",
+    "content-hash": "e9e0e78f0ca30f02fe83af7412229522",
     "packages": [
         {
             "name": "doctrine/cache",
@@ -1139,6 +1139,60 @@
                 "source": "https://github.com/top-think/think-view/tree/v1.0.14"
             },
             "time": "2019-11-06T11:40:13+00:00"
+        },
+        {
+            "name": "wenhainan/thinkphp6-auth",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wenhainan/thinkphp6-auth.git",
+                "reference": "e427acce5c392fbeca4ae3af762b75b13f3eac2b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wenhainan/thinkphp6-auth/zipball/e427acce5c392fbeca4ae3af762b75b13f3eac2b",
+                "reference": "e427acce5c392fbeca4ae3af762b75b13f3eac2b",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "extra": {
+                "think": {
+                    "config": {
+                        "auth": "src/config/auth.php"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "think\\wenhainan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "wenhainan",
+                    "email": "610176732@qq.com"
+                }
+            ],
+            "description": "auth package for thinkphp6",
+            "homepage": "https://github.com/wenhainan/thinkphp6-auth",
+            "support": {
+                "issues": "https://github.com/wenhainan/thinkphp6-auth/issues",
+                "source": "https://github.com/wenhainan/thinkphp6-auth/tree/1.0.4"
+            },
+            "time": "2020-03-02T08:45:07+00:00"
         }
     ],
     "packages-dev": [
