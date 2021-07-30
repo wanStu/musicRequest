@@ -2,14 +2,11 @@
 
 
 namespace app\controller;
-use app\model\MusicFileListModel;
-use app\model\VideoFileListModel;
+
+
 use app\server\GetDataInDbServer;
 use app\server\UpdateFileDataToDbServer;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
-use think\facade\Db;
+use think\View;
 
 /**
  * 获取 歌曲/视频 文件列表
@@ -34,15 +31,13 @@ class Index
      *          ......
      *      ]
      * ]
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateFileData($type = "",array $fileList = []) {
-        if($type == "") {
-
-        }else {
-            $result = (new UpdateFileDataToDbServer)->updateDb($type,$fileList);
+        if($type != "") {
+            $result = (new UpdateFileDataToDbServer)->updateDb($type, $fileList);
         }
         return Json_encode($result);
     }
@@ -50,25 +45,27 @@ class Index
     /**
      * 更新数据库中状态非 -1(禁用) 的文件状态 若能在本地找到则状态为 1(正常) 找不到状态为 0(找不到资源)
      * @return false|string
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateFileStatusInDb() {
-        $result = (new \app\server\UpdateFileDataToDbServer)->updateFileStatusInDb("music");
+        $result = (new UpdateFileDataToDbServer)->updateFileStatusInDb("music");
         return Json_encode($result);
     }
 
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
-     * @return MusicFileListModel[]|VideoFileListModel[]|array|string|\think\Collection
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @return View|\think\response\View
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getList(string $type) {
-        return (new GetDataInDbServer) -> getListInDb($type);
+    public function getList(string $type)
+    {
+        $data = (new GetDataInDbServer) -> getListInDb($type);
+        return view("",["data" => $data]);
     }
 
 }
