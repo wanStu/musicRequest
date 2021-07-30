@@ -4,13 +4,13 @@
 namespace app\server;
 
 
-use app\model\MusicFileListModel;
+use app\model\ThinkAuthRuleModel;
 use app\model\VideoFileListModel;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
-use think\Model;
+use think\wenhainan\Auth;
 
 /**
  * 从数据库中获取数据
@@ -22,19 +22,51 @@ class GetDataInDbServer
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
-     * @return array|MusicFileListModel[]|string|Collection|VideoFileListModel[] 以Json格式返回数据库中的音乐/视频列表
+     * @return array|ThinkAuthRuleModel[]|string|Collection|VideoFileListModel[] 以Json格式返回数据库中的音乐/视频列表
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
      */
     public function getListInDb(string $type) {
         if($type == "music") {
-            $db = new MusicFileListModel();
+            $db = new ThinkAuthRuleModel();
         }else if($type == "video") {
             $db = new VideoFileListModel();
         }else {
             return "类型错误";
         }
         return $db->where($type."_status",1)->select();
+    }
+
+    /**
+     * 验证用户是否具有某项规则的权限
+     * @param string $ruleName 规则名
+     * @param int $uid 用户ID
+     * @var array $ruleNameList 从数据库获取到所有规则名
+     * @var boolean $flag true 规则存在|false 不存在
+     * @return bool|string
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function validateUserPermission(string $ruleName, int $uid) {
+        $ruleNameList = ThinkAuthRuleModel::field("name")->select();
+        $ruleNameList = json_decode($ruleNameList,true);
+        $Temp = [];
+        foreach ($ruleNameList as $item) {
+            $Temp = array_merge_recursive($Temp,$item);
+        }
+        $ruleNameList = $Temp["name"];
+        $flag = in_array($ruleName,$ruleNameList);
+        if(!$flag) {
+            return "规则不存在";
+        }else {
+            if((Auth::instance())->check($ruleName,$uid)) {
+                return true;
+            }else {
+                return false;
+            }
+        }
+
     }
 }

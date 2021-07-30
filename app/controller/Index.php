@@ -72,4 +72,17 @@ class Index
         return view("",["data" => $data]);
     }
 
+    /**
+     * 验证用户是否具有某项规则的权限
+     * @param string $ruleName 规则名
+     * @param int $uid 用户ID
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function validatePermission(string $ruleName, int $uid) {
+        $result = (new GetDataInDbServer)->validateUserPermission($ruleName,$uid);
+        echo $result;
+    }
+
 }

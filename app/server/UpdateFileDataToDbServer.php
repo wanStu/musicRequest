@@ -2,7 +2,7 @@
 
 
 namespace app\server;
-use app\model\MusicFileListModel;
+use app\model\ThinkAuthRuleModel;
 use app\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -103,7 +103,7 @@ class UpdateFileDataToDbServer
             $data[$type."_name"] = trim($fileInfo[1]);
             $data[$type."_dir"] = $fileInfo[2];
             if($type == "music") {
-                $db = new MusicFileListModel;
+                $db = new ThinkAuthRuleModel;
             }else if($type == "video") {
                 $db = new VideoFileListModel;
             }
@@ -131,7 +131,7 @@ class UpdateFileDataToDbServer
         $msg = [];
         $db;
         if($type == "music") {
-            $db = new MusicFileListModel;
+            $db = new ThinkAuthRuleModel;
             $fileList = $db->where("music_status","<>",-1)->select();
         }else if($type == "video"){
             $db = new VideoFileListModel;
