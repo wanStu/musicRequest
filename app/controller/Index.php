@@ -16,7 +16,7 @@ class Index
 {
     public function index(): string
     {
-        return app()->getRootPath();
+        return app()->getRootPath()."dsadsas";
 //        return "once try";
     }
 
