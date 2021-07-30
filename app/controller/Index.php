@@ -82,7 +82,11 @@ class Index
      */
     public function validatePermission(string $ruleName, int $uid) {
         $result = (new GetDataInDbServer)->validateUserPermission($ruleName,$uid);
-        echo $result;
+        if ($result) {
+            return "用户ID为 <span style='color: #39c5bb'>".$uid."</span> 的用户 有 <span style='color: #39c5bb'>".$ruleName."</span> 权限 ";
+        }else {
+            return "用户ID为 <span style='color: red'>".$uid."</span> 的用户 没有 <span style='color: red'>".$ruleName."</span> 权限 ";
+        }
     }
 
 }
