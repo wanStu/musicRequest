@@ -1,6 +1,8 @@
-ThinkPHP 6.0
+music request
 ===============
 
+>##基于ThinkPHP 6.0
+>
 > 运行环境要求PHP7.1+，兼容PHP8.0。
 >
 > ###使用插件列表
