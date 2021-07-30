@@ -2,14 +2,11 @@
 
 
 namespace app\server;
-use app\controller\Index;
 use app\model\MusicFileListModel;
 use app\model\VideoFileListModel;
-use ErrorException;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
-use think\Model;
 
 /**
  * 更新数据库中的数据
@@ -37,8 +34,8 @@ class UpdateFileDataToDbServer
     public function getList(string $type,string $dir = "") {
         $dir = ($dir != "") ? $dir : app()->getRootPath()."public/static/".$type."File";
 
-        if($fileList = scandir($dir)) {
-            return "s";
+        if(!$fileList = scandir($dir)) {
+            return "文件夹路径有误";
         }
         foreach ($fileList as $key => $item) {
             if(is_dir($dir."/".$item)) {
@@ -106,9 +103,9 @@ class UpdateFileDataToDbServer
             $data[$type."_name"] = trim($fileInfo[1]);
             $data[$type."_dir"] = $fileInfo[2];
             if($type == "music") {
-                $db = new \app\model\MusicFileListModel;
+                $db = new MusicFileListModel;
             }else if($type == "video") {
-                $db = new \app\model\VideoFileListModel;
+                $db = new VideoFileListModel;
             }
             if(!$db->where($type."_name",$data[$type."_name"])->where($type."_author",$data[$type."_author"])->find()) {
                 if(!$db::create($data)) {

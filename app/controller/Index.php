@@ -36,9 +36,14 @@ class Index
      */
     public function updateFileData($type = "",array $fileList = []) {
         if($type != "") {
-            $result = (new UpdateFileDataToDbServer)->updateDb($type, $fileList);
+            if((new UpdateFileDataToDbServer)->updateDb($type, $fileList)) {
+                return "成功";
+            }else {
+                return "未知错误";
+            }
+        }else {
+            return "类型错误";
         }
-        return Json_encode($result);
     }
 
     /**
@@ -50,7 +55,7 @@ class Index
      */
     public function updateFileStatusInDb() {
         $result = (new UpdateFileDataToDbServer)->updateFileStatusInDb("music");
-        return Json_encode($result);
+        return Json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
     /**
