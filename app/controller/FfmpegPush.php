@@ -13,6 +13,5 @@ class FfmpegPush
     public function pushVideoStart() {
         $job = "PushVideo";
         Queue::push($job);
-//        dump($pushCmd->stop());// 停止推流，需要异步调用
     }
 }
