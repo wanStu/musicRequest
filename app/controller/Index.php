@@ -5,6 +5,7 @@ namespace app\controller;
 
 
 use app\server\GetDataInDbServer;
+use app\server\PlugFlow;
 use app\server\UpdateFileDataToDbServer;
 use think\View;
 
@@ -14,6 +15,10 @@ use think\View;
  */
 class Index
 {
+    /**
+     * 主页
+     * @return string
+     */
     public function index(): string
     {
         return app()->getRootPath();
@@ -80,13 +85,22 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function validatePermission(string $ruleName, int $uid) {
+    public function validatePermission(string $ruleName, int $uid): string
+    {
         $result = (new GetDataInDbServer)->validateUserPermission($ruleName,$uid);
         if ($result) {
             return "用户ID为 <span style='color: #39c5bb'>".$uid."</span> 的用户 有 <span style='color: #39c5bb'>".$ruleName."</span> 权限 ";
         }else {
             return "用户ID为 <span style='color: red'>".$uid."</span> 的用户 没有 <span style='color: red'>".$ruleName."</span> 权限 ";
         }
+    }
+
+    /**
+     * 发布任务，推流到直播间
+     * @param string $data 将被推流的视频路径
+     */
+    public function liveStart(string $data) {
+        return (new PlugFlow)->liveStart($data);
     }
 
 }
