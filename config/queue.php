@@ -10,13 +10,14 @@
 // +----------------------------------------------------------------------
 
 return [
-    'default'     => 'sync',
+    'default'     => 'redis',
     'connections' => [
         'sync'     => [
             'type' => 'sync',
         ],
         'database' => [
             'type'       => 'database',
+            'expire'    => 60,           // 任务的过期时间，默认为60秒; 若要禁用，则设置为 null
             'queue'      => 'default',
             'table'      => 'jobs',
             'connection' => null,
