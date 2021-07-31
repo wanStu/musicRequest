@@ -4,14 +4,16 @@
 namespace app\controller;
 
 use think\facade\Queue;
-use app\job\PushVideo;
+use FFmpeg;
 class FfmpegPush
 {
     /**
      * 推流到直播间
      */
-    public function pushVideoStart() {
+    public function liveStart() {
         $job = "PushVideo";
         Queue::push($job);
+    }
+    public function liveClose() {
     }
 }
