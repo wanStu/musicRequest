@@ -17,28 +17,19 @@ class PushVideo
      */
     public function fire(Job $job, $data) {
         $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
+        $job->delete();
         if(!$isJobStillNeedToBeDone){
-            $job->delete();
             return;
         }
-        $job->delete();
         $isJobDone = $this->liveStart($data);
-//        if ($isJobDone) {
-//            // 如果任务执行成功， 记得删除任务
-//            $job->delete();
-//            print("<info>任务完成"."</info>\n");
-//        }else{
-//            if ($job->attempts() > 3) {
-//                //通过这个方法可以检查这个任务已经重试了几次了
-//                print("<warn>这个任务已经重试了3次!"."</warn>\n");
-//
-//                $job->delete();
-//
-//            }
-//        }
-
-
-
+        if ($isJobDone) {
+            $job->delete();
+        }else{
+            if ($job->attempts() > 5) {
+                ECHO "这个任务已经重试了5次!",PHP_EOL;
+                $job->delete();
+            }
+        }
     }
     /**
      * 有些消息在到达消费者时,可能已经不再需要执行了
@@ -50,9 +41,7 @@ class PushVideo
         return true;
     }
     /**
-     * 根据消息中的数据进行实际的业务处理...
-     */
-    /**
+     * 推流视频
      * @param string $videoUrl 将被推流的视频路径
      * @return bool
      */
@@ -82,4 +71,3 @@ class PushVideo
         return false;
     }
 }
-//D:\phpstudy_pro\WWW\musicRequest\public/static/ffmpeg/ffmpeg.exe -y -i "D:\phpstudy_pro\WWW\musicRequest\public/static/videoFile/自作多情.mp4" -vcodec copy -acodec aac -f flv  "rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_188609215_9315200&key=ce264338a2392806e0634a40e63df74d&schedule=rtmp&pflag=1"
