@@ -27,7 +27,7 @@ class GetDataInDbServer
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function getListInDb(string $type) {
+    public function getFileListInDb(string $type) {
         if($type == "music") {
             $db = new ThinkAuthRuleModel();
         }else if($type == "video") {
@@ -52,20 +52,20 @@ class GetDataInDbServer
     public function validateUserPermission(string $ruleName, int $uid) {
         $ruleNameList = ThinkAuthRuleModel::field("name")->select();
         $ruleNameList = json_decode($ruleNameList,true);
-        $Temp = [];
+        $tempRuleList = [];
         foreach ($ruleNameList as $item) {
-            $Temp = array_merge_recursive($Temp,$item);
+            $tempRuleList = array_merge_recursive($tempRuleList,$item);
         }
-        $ruleNameList = $Temp["name"];
-        $flag = in_array($ruleName,$ruleNameList);
-        if(!$flag) {
-            return "规则不存在";
-        }else {
-            if((Auth::instance())->check($ruleName,$uid)) {
+        $ruleNameList = $tempRuleList["name"];
+        $ruleExist = in_array($ruleName,$ruleNameList);
+        if($ruleExist) {
+            if ((Auth::instance())->check($ruleName, $uid)) {
                 return true;
-            }else {
+            } else {
                 return false;
             }
+        } else {
+            return "规则不存在";
         }
 
     }

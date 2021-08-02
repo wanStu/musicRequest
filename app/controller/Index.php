@@ -6,7 +6,7 @@ namespace app\controller;
 
 use app\server\GetDataInDbServer;
 use app\server\PlugFlow;
-use app\server\UpdateFileDataToDbServer;
+use app\server\UpdateFileInfoToDbServer;
 use think\View;
 
 /**
@@ -39,9 +39,10 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function updateFileData($type = "",array $fileList = []) {
+    public function updateFileDataToDb($type = "",array $fileList = []): string
+    {
         if($type != "") {
-            if((new UpdateFileDataToDbServer)->updateDb($type, $fileList)) {
+            if((new UpdateFileInfoToDbServer)->updateDb($type, $fileList)) {
                 return "成功";
             }else {
                 return "未知错误";
@@ -59,7 +60,7 @@ class Index
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateFileStatusInDb() {
-        $result = (new UpdateFileDataToDbServer)->updateFileStatusInDb("music");
+        $result = (new UpdateFileInfoToDbServer)->updateFileStatusInDb("music");
         return Json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 
@@ -71,9 +72,9 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getList(string $type)
+    public function getFileList(string $type)
     {
-        $data = (new GetDataInDbServer) -> getListInDb($type);
+        $data = (new GetDataInDbServer) -> getFileListInDb($type);
         return view("",["data" => $data]);
     }
 
@@ -85,7 +86,7 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function validatePermission(string $ruleName, int $uid): string
+    public function validateUserPermission(string $ruleName, int $uid): string
     {
         $result = (new GetDataInDbServer)->validateUserPermission($ruleName,$uid);
         if ($result) {
@@ -99,7 +100,8 @@ class Index
      * 发布任务，推流到直播间
      * @param string $data 将被推流的视频路径
      */
-    public function liveStart(string $data) {
+    public function releaseLiveTask(string $data): string
+    {
         return (new PlugFlow)->liveStart($data);
     }
 
