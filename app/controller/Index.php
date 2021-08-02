@@ -41,7 +41,7 @@ class Index
      */
     public function updateFileDataToDb($type = "",array $fileList = []): string
     {
-        if($type != "") {
+        if("" != $type) {
             if((new UpdateFileInfoToDbServer)->updateDb($type, $fileList)) {
                 return "成功";
             }else {

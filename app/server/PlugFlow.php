@@ -17,11 +17,11 @@ class PlugFlow
         $jobClassName  = 'app\job\PushVideo';
 
         // 2.当前任务归属的队列名称，如果为新队列，会自动创建
-        $jobQueueName  	  = "PushVideo";
+        $jobQueueName = "PushVideo";
 
         $pushSuccess = Queue::push($jobClassName,$filePath,$jobQueueName);
 
-        if( $pushSuccess !== false ){
+        if(false !== $pushSuccess){
             return "任务 {$jobQueueName} 发布完成";
         }else{
             return "任务 {$jobQueueName} 发布失败";

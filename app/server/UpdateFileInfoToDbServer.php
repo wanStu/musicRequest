@@ -33,7 +33,7 @@ class UpdateFileInfoToDbServer
      * ]
      */
     public function getFileList(string $type,string $dir = "") {
-        $dir = ($dir != "") ? $dir : app()->getRootPath()."public/static/".$type."File";
+        $dir = ( "" != $dir) ? $dir : app()->getRootPath()."public/static/".$type."File";
 
         if(!$fileList = scandir($dir)) {
             return "文件夹路径有误";
@@ -41,7 +41,7 @@ class UpdateFileInfoToDbServer
         foreach ($fileList as $key => $item) {
             if(is_dir($dir."/".$item)) {
                 unset($fileList[$key]);
-                if($item == ".." || $item == ".") {
+                if(".." == $item || "." == $item) {
                     continue;
                 }
                 $fileList[$item] = $this -> getFileList($type,$dir."/".$item);
@@ -103,9 +103,9 @@ class UpdateFileInfoToDbServer
             $data[$type."_name"] = trim($fileInfo[1]);
             $data[$type."_dir"] = $fileInfo[2];
             $fileInfoTable = new class {};
-            if($type == "music") {
+            if("music" == $type) {
                 $fileInfoTable = new ThinkAuthRuleModel;
-            }else if($type == "video") {
+            }else if("video" == $type) {
                 $fileInfoTable = new VideoFileListModel;
             }
             if(!$fileInfoTable->where($type."_name",$data[$type."_name"])->where($type."_author",$data[$type."_author"])->find()) {
@@ -131,9 +131,9 @@ class UpdateFileInfoToDbServer
     public function updateFileStatusInDb(string $type = ""){
         $msg = [];
         $fileInfoTable = (object)[];
-        if($type == "music") {
+        if("music" == $type) {
             $fileInfoTable = new MusicFileListModel;
-        }else if($type == "video"){
+        }else if("video" == $type){
             $fileInfoTable = new VideoFileListModel;
         }else {
             return "类型错误";

@@ -28,7 +28,7 @@ class GetDataInDbServer
      * @throws ModelNotFoundException
      */
     public function getFileListInDb(string $type) {
-        if($type == "music") {
+        if("music" == $type) {
             $db = new ThinkAuthRuleModel();
         }else if($type == "video") {
             $db = new VideoFileListModel();
