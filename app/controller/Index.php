@@ -7,6 +7,9 @@ namespace app\controller;
 use app\server\GetDataInDbServer;
 use app\server\PlugFlow;
 use app\server\UpdateFileInfoToDbServer;
+use Error;
+use think\exception\ErrorException;
+use think\facade\Log;
 use think\View;
 
 /**
@@ -102,7 +105,15 @@ class Index
      */
     public function releaseLiveTask(string $data): string
     {
-        return (new PlugFlow)->liveStart($data);
+        if(is_file($data)) {
+            return (new PlugFlow)->liveStart($data);
+        }else {
+            $fileFullName = explode("/",$data);
+            $fileName = explode(".",$fileFullName[count($fileFullName) - 1])[0];
+            $data = str_replace('/','\\',$data);
+            Log::error("文件 【{$data}】 不存在，请检查文件");
+            return "您选择的文件 【{$fileName}】 异常，请联系网站管理员";
+        }
     }
 
 }
