@@ -6,6 +6,7 @@ use think\facade\Queue;
 
 class PlugFlow
 {
+    protected $message;
     /**
      * 发布推流到直播间的的任务
      * @param string $filePath 将被推流的视频路径
@@ -22,9 +23,11 @@ class PlugFlow
         $pushSuccess = Queue::push($jobClassName,$filePath,$jobQueueName);
 
         if(false !== $pushSuccess){
-            return "任务 {$jobQueueName} 发布完成";
+            $this->message = "任务 {$jobQueueName} 发布完成";
+            return true;
         }else{
-            return "任务 {$jobQueueName} 发布失败";
+            $this->message = "任务 {$jobQueueName} 发布失败";
+            return false;
         }
     }
 }

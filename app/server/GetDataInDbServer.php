@@ -65,7 +65,7 @@ class GetDataInDbServer
                 return false;
             }
         } else {
-            return "规则不存在";
+            return false;
         }
 
     }

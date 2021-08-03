@@ -7,8 +7,6 @@ namespace app\controller;
 use app\server\GetDataInDbServer;
 use app\server\PlugFlow;
 use app\server\UpdateFileInfoToDbServer;
-use Error;
-use think\exception\ErrorException;
 use think\facade\Log;
 use think\View;
 
@@ -70,6 +68,7 @@ class Index
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
+     *
      * @return View|\think\response\View
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -102,11 +101,27 @@ class Index
     /**
      * 发布任务，推流到直播间
      * @param string $data 将被推流的视频路径
+     * @param $ruleName
+     * @param $uid
+     * @return string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public function releaseLiveTask(string $data): string
+    public function releaseLiveTask(string $data,$ruleName,$uid): string
     {
+        $result = (new GetDataInDbServer)->validateUserPermission($ruleName, $uid);
+        if(!$result) {
+            return "点播失败!<br />可能的原因：<br />1. 您的权限不允许您点播 {$ruleName} 类型的作品<br />2. 系统内部故障，请将此错误报告给网站管理者";
+        }
+
         if(is_file($data)) {
-            return (new PlugFlow)->liveStart($data);
+            $release = (new PlugFlow)->liveStart($data);
+            if($release) {
+                return "点播完成，等待播放吧";
+            } else {
+                return "点播失败!原因：未知";
+            }
         }else {
             $fileFullName = explode("/",$data);
             $fileName = explode(".",$fileFullName[count($fileFullName) - 1])[0];
