@@ -40,10 +40,10 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function updateFileDataToDb($type = "",array $fileList = []): string
+    public function updateFileDataToDb($type = "",$fileList = []): string
     {
         if("" != $type) {
-            if((new UpdateFileInfoToDbServer)->updateDb($type, $fileList)) {
+            if((new UpdateFileInfoToDbServer)->updateFileListToDb($type, $fileList)) {
                 return "成功";
             }else {
                 return "未知错误";
@@ -60,8 +60,8 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function updateFileStatusInDb() {
-        $result = (new UpdateFileInfoToDbServer)->updateFileStatusInDb("music");
+    public function updateFileStatusInDb($type) {
+        $result = (new UpdateFileInfoToDbServer)->updateFileStatusInDb("{$type}");
         return Json_encode($result, JSON_UNESCAPED_UNICODE);
     }
 

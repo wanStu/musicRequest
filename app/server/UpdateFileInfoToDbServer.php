@@ -3,7 +3,6 @@
 
 namespace app\server;
 use app\model\MusicFileListModel;
-use app\model\ThinkAuthRuleModel;
 use app\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -82,29 +81,37 @@ class UpdateFileInfoToDbServer
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function updateDb(string $type, array $fileList = [], string $dir = ""): array
+    public function updateFileListToDb(string $type, array $fileList = [], string $dir = ""): array
     {
         $msg =[
             "error" => [],
             "success"   => [],
             "info" => []
         ];
-        if (($fileList == [])) {
+//        当得到的列表为空时自动获取对应类型的本地文件列表
+        if (([] == $fileList )) {
             $fileList = $this -> getFileList($type);
         }
         foreach ($fileList as $key => $item) {
             if(is_dir(app()->getRootPath()."public/static/".$type."File/".$key)) {
-                $msg = array_merge_recursive($msg,$this -> updateDb($type,$item,$key."/"));
+                $msg = array_merge_recursive($msg,$this -> updateFileListToDb($type,$item,$key."/"));
                 continue;
             }
             $fileInfo = explode("-",$item,2);
-            $fileInfo[] = "/static/".$type."File/{$dir}";
-            $data[$type."_author"] = trim($fileInfo[0]);
-            $data[$type."_name"] = trim($fileInfo[1]);
-            $data[$type."_dir"] = $fileInfo[2];
+            if(strpos($item,"-")) {
+                $fileInfo[] = "/static/".$type."File/{$dir}";
+                $data[$type."_author"] = trim($fileInfo[0]);
+                $data[$type."_name"] = trim($fileInfo[1]);
+                $data[$type."_dir"] = $fileInfo[2];
+            }else {
+                $fileInfo[] = "/static/".$type."File/{$dir}";
+                $data[$type."_author"] = "未知";
+                $data[$type."_name"] = trim($fileInfo[0]);
+                $data[$type."_dir"] = $fileInfo[1];
+            }
             $fileInfoTable = new class {};
             if("music" == $type) {
-                $fileInfoTable = new ThinkAuthRuleModel;
+                $fileInfoTable = new MusicFileListModel;
             }else if("video" == $type) {
                 $fileInfoTable = new VideoFileListModel;
             }
@@ -140,7 +147,7 @@ class UpdateFileInfoToDbServer
         }
         $fileList = $fileInfoTable->where($type."_status","<>",-1)->select();
         foreach ($fileList as $item) {
-            $fullFileName = $item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"];
+            $fullFileName = str_replace("未知 - ","",$item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"]);
             if(file_exists(app()->getRootPath()."public". $fullFileName)) {
                 $fileInfoTable::update([$type."_status" => 1],[$type."_id" => $item[$type."_id"]]);
                 $msg["find"][] =  "【".$fullFileName."】"." 可以找到，状态修改为 1 ";
