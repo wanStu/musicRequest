@@ -2,11 +2,13 @@
 
 
 namespace app\server;
+use Redis;
 use think\facade\Queue;
 
 class PlugFlow
 {
     protected $message;
+    protected $error = "未知";
     /**
      * 发布推流到直播间的的任务
      * @param string $filePath 将被推流的视频路径
@@ -20,8 +22,17 @@ class PlugFlow
         // 2.当前任务归属的队列名称，如果为新队列，会自动创建
         $jobQueueName = "PushVideo";
 
+        $redis = new Redis();
+        $redis -> connect("127.0.0.1");
+        $taskNum = $redis->lLen("{queues:PushVideo}");
+        for($i = $taskNum;$i--;){
+            $temp = json_decode($redis->lIndex("{queues:PushVideo}",$i),true);
+            if($temp["data"] == $filePath) {
+                $this->error = "该视频已经在列表里了";
+                return false;
+            }
+        }
         $pushSuccess = Queue::push($jobClassName,$filePath,$jobQueueName);
-
         if(false !== $pushSuccess){
             $this->message = "任务 {$jobQueueName} 发布完成";
             return true;
@@ -29,5 +40,8 @@ class PlugFlow
             $this->message = "任务 {$jobQueueName} 发布失败";
             return false;
         }
+    }
+    public function getError() {
+        return $this->error;
     }
 }

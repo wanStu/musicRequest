@@ -24,6 +24,13 @@ return [
             // 序列化机制 例如 ['serialize', 'unserialize']
             'serialize'  => [],
         ],
+        'redis' => [
+            // 驱动方式
+            'type'       => 'redis',
+            // 缓存保存目录
+            'host'       => '127.0.0.1'
+        ],
         // 更多的缓存连接
     ],
+
 ];

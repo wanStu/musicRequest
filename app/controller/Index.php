@@ -110,17 +110,18 @@ class Index
      */
     public function releaseLiveTask(string $data,$ruleName,$uid): string
     {
+
         $result = (new GetDataInDbServer)->validateUserPermission($ruleName, $uid);
         if(!$result) {
             return "点播失败!<br />可能的原因：<br />1. 您的权限不允许您点播 {$ruleName} 类型的作品<br />2. 系统内部故障，请将此错误报告给网站管理者";
         }
-
         if(is_file($data)) {
-            $release = (new PlugFlow)->liveStart($data);
-            if($release) {
+            $release = new PlugFlow();
+            $releaseTaskResult = $release->liveStart($data);
+            if($releaseTaskResult) {
                 return "点播完成，等待播放吧";
             } else {
-                return "点播失败!原因：未知";
+                return "点播失败!原因：".$release->getError();
             }
         }else {
             $fileFullName = explode("/",$data);

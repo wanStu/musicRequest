@@ -15,11 +15,13 @@ class PushVideo
      */
     public function fire(Job $job, $data) {
         $missionContinues = $this->checkMissionContinuesOrNot($data);
+
+        $job->delete();
         if(!$missionContinues){
             $job->delete();
             return;
         }
-        $jobDone = $this->pushStart($data);
+        $jobDone = $this->pushStart($job,$data);
         if ($jobDone) {
             $job->delete();
         }else{
@@ -43,7 +45,7 @@ class PushVideo
      * @param string $videoUrl 将被推流的视频路径
      * @return bool
      */
-    private function pushStart(string $videoUrl): bool
+    private function pushStart(Job $job,string $videoUrl): bool
     {
         echo "开始播放",PHP_EOL;
         $ffmpeg = FFMpeg::create([
