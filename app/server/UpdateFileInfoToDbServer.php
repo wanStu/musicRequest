@@ -98,13 +98,12 @@ class UpdateFileInfoToDbServer
                 continue;
             }
             $fileInfo = explode("-",$item,2);
+            $fileInfo[] = "/static/".$type."File/{$dir}";
             if(strpos($item,"-")) {
-                $fileInfo[] = "/static/".$type."File/{$dir}";
                 $data[$type."_author"] = trim($fileInfo[0]);
                 $data[$type."_name"] = trim($fileInfo[1]);
                 $data[$type."_dir"] = $fileInfo[2];
             }else {
-                $fileInfo[] = "/static/".$type."File/{$dir}";
                 $data[$type."_author"] = "未知";
                 $data[$type."_name"] = trim($fileInfo[0]);
                 $data[$type."_dir"] = $fileInfo[1];
