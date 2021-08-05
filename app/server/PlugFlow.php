@@ -25,6 +25,15 @@ class PlugFlow
         $redis = new Redis();
         $redis -> connect("127.0.0.1");
         $taskNum = $redis->lLen("{queues:PushVideo}");
+        $taskReservedNum = $redis->zCard("{queues:PushVideo}:reserved");
+        if($taskReservedNum) {
+            $taskReservedList = $redis->zRange("{queues:PushVideo}:reserved",0,-1);
+            $taskReserved = json_decode($taskReservedList[0],true);
+            if ($taskReserved["data"] == $filePath) {
+                $this->error = "该视频已经在列表里了";
+                return false;
+            }
+        }
         for($i = $taskNum;$i--;){
             $temp = json_decode($redis->lIndex("{queues:PushVideo}",$i),true);
             if($temp["data"] == $filePath) {

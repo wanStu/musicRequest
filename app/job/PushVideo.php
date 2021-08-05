@@ -15,14 +15,13 @@ class PushVideo
      */
     public function fire(Job $job, $data) {
         $missionContinues = $this->checkMissionContinuesOrNot($data);
-
-        $job->delete();
         if(!$missionContinues){
             $job->delete();
             return;
         }
         $jobDone = $this->pushStart($job,$data);
         if ($jobDone) {
+            echo "结束",PHP_EOL;
             $job->delete();
         }else{
             if ($job->attempts() > 5) {
@@ -47,11 +46,12 @@ class PushVideo
      */
     private function pushStart(Job $job,string $videoUrl): bool
     {
-        echo "开始播放",PHP_EOL;
+
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries'  => root_path() . "public/static/ffmpeg/ffmpeg.exe",
             'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe"
         ]);
+
         $pushPath = "rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_188609215_9315200&key=ce264338a2392806e0634a40e63df74d&schedule=rtmp&pflag=1";
         $video = $ffmpeg->open($videoUrl);
         $format = new X264();
@@ -66,8 +66,8 @@ class PushVideo
             ->setInitialParameters(["-re","-i"])
             ->setAudioKiloBitrate(192)
             ->setAdditionalParameters(["-f","flv"]);
+        echo "开始播放",PHP_EOL;
         $video->save($format, $pushPath);
-        echo "结束播放",PHP_EOL;
-        return false;
+        return true;
     }
 }
