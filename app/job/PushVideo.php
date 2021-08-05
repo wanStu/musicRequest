@@ -21,11 +21,11 @@ class PushVideo
         }
         $jobDone = $this->pushStart($job,$data);
         if ($jobDone) {
-            echo "结束",PHP_EOL;
+            echo "停止播放",PHP_EOL;
             $job->delete();
-        }else{
-            if ($job->attempts() > 5) {
-                ECHO "这个任务已经重试了5次!",PHP_EOL;
+        }else {
+            if ($job->attempts() > 3) {
+                ECHO "这个任务已经重试了3次!",PHP_EOL;
                 $job->delete();
             }
         }
@@ -46,10 +46,15 @@ class PushVideo
      */
     private function pushStart(Job $job,string $videoUrl): bool
     {
-
+        if ($job->attempts() > 3) {
+            echo "这个任务已经重试了3次!",PHP_EOL;
+            return true;
+        }
+        sleep(3);
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries'  => root_path() . "public/static/ffmpeg/ffmpeg.exe",
-            'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe"
+            'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe",
+            'timeout'          => 360
         ]);
 
         $pushPath = "rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_188609215_9315200&key=ce264338a2392806e0634a40e63df74d&schedule=rtmp&pflag=1";
