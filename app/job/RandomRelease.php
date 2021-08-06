@@ -28,7 +28,7 @@ class RandomRelease
         $taskNum = $redis->lLen("{queues:PushVideo}");
         $taskReservedNum = $redis->zCard("{queues:PushVideo}:reserved");
 //        当{queues:PushVideo}中的值低于2个或{queues:PushVideo}:reserved中没有值时
-        if(0 == $taskReservedNum) {
+        if(!$taskReservedNum) {
             for ($i = $redis->zCard("{queues:PushVideo}:reserved");!$i;$i = $redis->zCard("{queues:PushVideo}:reserved")) {
                 $fileList = (new GetDataInDbServer)->getFileListInDb("video");
                 $index = rand(0,count($fileList)-1);
@@ -43,7 +43,7 @@ class RandomRelease
             }
             return true;
         }
-        if($taskNum < 2) {
+        if(!$taskNum) {
             for ($i = $redis->lLen("{queues:PushVideo}");$i < 1;$i = $redis->lLen("{queues:PushVideo}")) {
                 $fileList = (new GetDataInDbServer)->getFileListInDb("video");
                 $index = rand(0,count($fileList)-1);
