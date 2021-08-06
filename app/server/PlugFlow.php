@@ -21,7 +21,6 @@ class PlugFlow
 
         // 2.当前任务归属的队列名称，如果为新队列，会自动创建
         $jobQueueName = "PushVideo";
-
         $redis = new Redis();
         $redis -> connect("127.0.0.1");
         $taskNum = $redis->lLen("{queues:PushVideo}");
@@ -46,10 +45,51 @@ class PlugFlow
             $this->message = "任务 {$jobQueueName} 发布完成";
             return true;
         }else{
-            $this->message = "任务 {$jobQueueName} 发布失败";
+            $this->error = "任务 {$jobQueueName} 发布失败";
             return false;
         }
     }
+
+    /**
+     * 发布当播放列表为空时自动添加一个视频的任务
+     * @return bool
+     */
+    public function RandomRelease() {
+        // 1.当前任务将由哪个类来负责处理。
+        //   当轮到该任务时，系统将生成一个该类的实例，并调用其 fire 方法
+        $jobClassName  = 'app\job\RandomRelease';
+        // 2.当前任务归属的队列名称，如果为新队列，会自动创建
+        $jobQueueName = "RandomReleaseTask";
+        $redis = new Redis();
+        $redis -> connect("127.0.0.1");
+        $taskNum = $redis->lLen("{queues:RandomReleaseTask}");
+        $taskReservedNum = $redis->zCard("{queues:RandomReleaseTask}:reserved");
+        if($taskNum || $taskReservedNum) {
+            $this->error = "已经开启";
+            return false;
+        }
+        $pushSuccess = Queue::push($jobClassName, "", $jobQueueName);
+        if(false !== $pushSuccess){
+            $this->message = "任务 {$jobQueueName} 发布完成";
+            return true;
+        }else{
+            $this->error = "任务 {$jobQueueName} 发布失败";
+            return false;
+        }
+    }
+
+    /**
+     * 返回信息
+     * @return mixed
+     */
+    public function getMessage() {
+        return $this->message;
+    }
+
+    /**
+     * 返回错误
+     * @return string
+     */
     public function getError() {
         return $this->error;
     }

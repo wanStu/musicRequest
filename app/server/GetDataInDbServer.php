@@ -22,7 +22,7 @@ class GetDataInDbServer
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
-     * @return array|ThinkAuthRuleModel[]|string|Collection|VideoFileListModel[] 以Json格式返回数据库中的音乐/视频列表
+     * @return array|string 以Array格式返回数据库中的音乐/视频列表
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
@@ -35,7 +35,7 @@ class GetDataInDbServer
         }else {
             return "类型错误";
         }
-        return $db->where($type."_status",1)->select();
+        return $db->where($type."_status",1)->select()->toArray();
     }
 
     /**

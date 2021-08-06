@@ -7,7 +7,9 @@ namespace app\controller;
 use app\server\GetDataInDbServer;
 use app\server\PlugFlow;
 use app\server\UpdateFileInfoToDbServer;
+use Redis;
 use think\facade\Log;
+use think\facade\Queue;
 use think\View;
 
 /**
@@ -129,6 +131,18 @@ class Index
             $data = str_replace('/','\\',$data);
             Log::error("文件 【{$data}】 不存在，请检查文件");
             return "您选择的文件 【{$fileName}】 异常，请联系网站管理员";
+        }
+    }
+
+    /**
+     * 开启 当播放列表为空时自动添加一个视频
+     */
+    public function randomRelease() {
+        $plugFlow = new PlugFlow();
+        if($plugFlow->RandomRelease()) {
+            dump($plugFlow->getMessage());
+        }else {
+            dump($plugFlow->getError());
         }
     }
 
