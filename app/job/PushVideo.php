@@ -14,12 +14,11 @@ class PushVideo
      * @param $data
      */
     public function fire(Job $job, $data) {
-        $missionContinues = $this->checkMissionContinuesOrNot($data);
-        $job->delete();
-        if(!$missionContinues){
-            return;
-        }
         $jobDone = $this->pushStart($job,$data);
+        if($jobDone) {
+            $job->delete();
+        }
+
     }
     /**
      * 有些消息在到达消费者时,可能已经不再需要执行了
@@ -51,6 +50,14 @@ class PushVideo
             ->setAudioKiloBitrate(192)
             ->setAdditionalParameters(["-f","flv"]);
         $fileInfo = explode("/",$videoUrl);
+//        dump($video->getFinalCommand($format,$pushPath));
+        if ($job->attempts() > 2) {
+            echo  "5s后开始第".$job->attempts()."次执行！",PHP_EOL,"将删除任务并最后执行一次";
+            $job->delete();
+        }else {
+            echo "5s后开始第".$job->attempts()."次执行！",PHP_EOL;
+        }
+        sleep(5);
         echo "开始播放 ".$fileInfo[count($fileInfo)-1],PHP_EOL;
         $video->save($format, $pushPath);
         return true;

@@ -90,13 +90,15 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function validateUserPermission(string $ruleName, int $uid): string
+    public function validateUserPermission(string $ruleName, int $uid)
     {
+        $havePermission = ["无 $ruleName 权限",
+            "$ruleName 权限验证通过"];
         $result = (new GetDataInDbServer)->validateUserPermission($ruleName,$uid);
         if ($result) {
-            return "用户ID为 <span style='color: #39c5bb'>".$uid."</span> 的用户 有 <span style='color: #39c5bb'>".$ruleName."</span> 权限 ";
+            return returnAjax(200,$havePermission[1],true);
         }else {
-            return "用户ID为 <span style='color: red'>".$uid."</span> 的用户 没有 <span style='color: red'>".$ruleName."</span> 权限 ";
+            return returnAjax(100,$havePermission[0],false);
         }
     }
 
@@ -110,7 +112,7 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function releaseLiveTask(string $data,$ruleName,$uid): string
+    public function releaseLiveTask(string $data,$ruleName,$uid)
     {
 
         $result = (new GetDataInDbServer)->validateUserPermission($ruleName, $uid);
@@ -121,9 +123,9 @@ class Index
             $release = new PlugFlow();
             $releaseTaskResult = $release->liveStart($data);
             if($releaseTaskResult) {
-                return "点播完成，等待播放吧";
+                return returnAjax(200,"点播完成，等待播放吧",true);
             } else {
-                return "点播失败!原因：".$release->getError();
+                return returnAjax(100,$release->getError(),false);
             }
         }else {
             $fileFullName = explode("/",$data);
