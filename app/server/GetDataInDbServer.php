@@ -4,7 +4,7 @@
 namespace app\server;
 
 
-use app\model\MusicFileListModel;
+use app\model\PlayListModel;
 use app\model\ThinkAuthRuleModel;
 use app\model\VideoFileListModel;
 use think\Collection;
@@ -31,7 +31,7 @@ class GetDataInDbServer
      */
     public function getFileListInDb(string $type) {
         if("music" == $type) {
-            $db = new MusicFileListModel();
+            $db = new PlayListModel();
         }else if($type == "video") {
             $db = new VideoFileListModel();
         }else {

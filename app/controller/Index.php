@@ -130,7 +130,7 @@ class Index extends Base
         }
         if(is_file($data)) {
             $release = new PlugFlow();
-            $releaseTaskResult = json_decode($release->liveStart($data)->getContent(),true);
+            $releaseTaskResult = json_decode($release->liveStart($data,$uid)->getContent(),true);
             if($releaseTaskResult["data"]) {
                 return returnAjax(200,"点播完成，等待播放吧",true);
             } else {
@@ -156,6 +156,17 @@ class Index extends Base
         }else {
             return returnAjax(100,$result["msg"],false);
         }
+    }
+
+    /**
+     * 获取播放列表
+     */
+    public function getPlaylist() {
+        $redis = new Redis();
+        $redis -> connect("127.0.0.1");
+        $taskNum = $redis->lLen("{queues:PushVideo}");
+        $taskReservedNum = $redis->zCard("{queues:PushVideo}:reserved");
+        dd($taskNum + $taskReservedNum);
     }
 
 }

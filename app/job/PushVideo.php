@@ -4,6 +4,7 @@
 namespace app\job;
 
 
+use app\model\PlayListModel;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
 use think\queue\Job;
@@ -19,15 +20,6 @@ class PushVideo
             $job->delete();
         }
 
-    }
-    /**
-     * 有些消息在到达消费者时,可能已经不再需要执行了
-     * @param array|mixed $data 将被推流的视频路径
-     * @return boolean                 任务执行的结果
-     */
-    private function checkMissionContinuesOrNot($data): bool
-    {
-        return true;
     }
     /**
      * 推流视频
@@ -50,7 +42,7 @@ class PushVideo
             ->setAudioKiloBitrate(192)
             ->setAdditionalParameters(["-f","flv"]);
         $fileInfo = explode("/",$videoUrl);
-//        dump($video->getFinalCommand($format,$pushPath));
+        echo "开始播放 ".$fileInfo[count($fileInfo)-1],PHP_EOL;
         if ($job->attempts() > 2) {
             echo  "5s后开始第".$job->attempts()."次执行！",PHP_EOL,"将删除任务并最后执行一次";
             $job->delete();
@@ -58,7 +50,6 @@ class PushVideo
             echo "5s后开始第".$job->attempts()."次执行！",PHP_EOL;
         }
         sleep(5);
-        echo "开始播放 ".$fileInfo[count($fileInfo)-1],PHP_EOL;
         $video->save($format, $pushPath);
         return true;
     }
