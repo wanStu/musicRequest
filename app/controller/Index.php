@@ -4,6 +4,7 @@
 namespace app\controller;
 
 
+use app\Base;
 use app\server\GetDataInDbServer;
 use app\server\PlugFlow;
 use app\server\UpdateFileInfoToDbServer;
@@ -16,15 +17,15 @@ use think\View;
  * 获取 歌曲/视频 文件列表
  * @package app\controller
  */
-class Index
+class Index extends Base
 {
     /**
      * 主页
      * @return string
      */
-    public function index(): string
+    public function index()
     {
-        return app()->getRootPath();
+        return returnAjax(200,app()->getRootPath(),true);
     }
 
     /**
@@ -42,16 +43,18 @@ class Index
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function updateFileDataToDb($type = "",$fileList = []): string
+    public function updateFileDataToDb($type = "",$fileList = [])
     {
-        if("" != $type) {
-            if((new UpdateFileInfoToDbServer)->updateFileListToDb($type, $fileList)) {
-                return "成功";
+        if(in_array($type,$this::FILE_TYPE)) {
+            $result = json_decode((new UpdateFileInfoToDbServer)->updateFileListToDb($type, $fileList)->getContent(),true);
+            halt($result);
+            if($result["data"]) {
+                return returnAjax(200,"更新成功",true);
             }else {
-                return "未知错误";
+                return returnAjax(100,"未知错误",false);
             }
         }else {
-            return "类型错误";
+            return returnAjax(100,"类型错误",false);
         }
     }
 
@@ -63,23 +66,29 @@ class Index
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateFileStatusInDb($type) {
-        $result = (new UpdateFileInfoToDbServer)->updateFileStatusInDb("{$type}");
-        return Json_encode($result, JSON_UNESCAPED_UNICODE);
+        $result = json_decode((new UpdateFileInfoToDbServer)->updateFileStatusInDb("{$type}")->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],true);
+        }else {
+            return returnAjax(100,$result["msg"],false);
+        }
     }
 
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
-     *
-     * @return View|\think\response\View
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function getFileList(string $type)
     {
-        $data = (new GetDataInDbServer) -> getFileListInDb($type);
-        return view("",["data" => $data]);
+        $result = json_decode((new GetDataInDbServer)->getFileListInDb($type)->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],true);
+        }else {
+            return returnAjax(100,$result["msg"],false);
+        }
     }
 
     /**
@@ -92,13 +101,13 @@ class Index
      */
     public function validateUserPermission(string $ruleName, int $uid)
     {
-        $havePermission = ["无 $ruleName 权限",
-            "$ruleName 权限验证通过"];
-        $result = (new GetDataInDbServer)->validateUserPermission($ruleName,$uid);
-        if ($result) {
-            return returnAjax(200,$havePermission[1],true);
+        $ruleName = str_replace(" ","",$ruleName);
+        $uid = str_replace(" ","",$uid);
+        $result = json_decode((new GetDataInDbServer)->validateUserPermission($ruleName,$uid)->getContent(),true);
+        if ($result["data"]) {
+            return returnAjax(200,$result["msg"],true);
         }else {
-            return returnAjax(100,$havePermission[0],false);
+            return returnAjax(100,$result["msg"],false);
         }
     }
 
@@ -115,24 +124,24 @@ class Index
     public function releaseLiveTask(string $data,$ruleName,$uid)
     {
 
-        $result = (new GetDataInDbServer)->validateUserPermission($ruleName, $uid);
-        if(!$result) {
-            return "点播失败!<br />可能的原因：<br />1. 您的权限不允许您点播 {$ruleName} 类型的作品<br />2. 系统内部故障，请将此错误报告给网站管理者";
+        $result = json_decode((new GetDataInDbServer)->validateUserPermission($ruleName, $uid)->getContent(),true);
+        if(!$result["data"]) {
+            return returnAjax(100,$result["msg"],false);
         }
         if(is_file($data)) {
             $release = new PlugFlow();
-            $releaseTaskResult = $release->liveStart($data);
-            if($releaseTaskResult) {
+            $releaseTaskResult = json_decode($release->liveStart($data)->getContent(),true);
+            if($releaseTaskResult["data"]) {
                 return returnAjax(200,"点播完成，等待播放吧",true);
             } else {
-                return returnAjax(100,$release->getError(),false);
+                return returnAjax(100,$releaseTaskResult["msg"],false);
             }
         }else {
             $fileFullName = explode("/",$data);
             $fileName = explode(".",$fileFullName[count($fileFullName) - 1])[0];
             $data = str_replace('/','\\',$data);
             Log::error("文件 【{$data}】 不存在，请检查文件");
-            return "您选择的文件 【{$fileName}】 异常，请联系网站管理员";
+            return returnAjax(100,"您选择的文件 【{$fileName}】 异常，请联系网站管理员",false);
         }
     }
 
@@ -141,10 +150,11 @@ class Index
      */
     public function randomRelease() {
         $plugFlow = new PlugFlow();
-        if($plugFlow->RandomRelease()) {
-            dump($plugFlow->getMessage());
+        $result = json_decode($plugFlow->RandomRelease()->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],true);
         }else {
-            dump($plugFlow->getError());
+            return returnAjax(100,$result["msg"],false);
         }
     }
 

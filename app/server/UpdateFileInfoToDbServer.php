@@ -43,10 +43,10 @@ class UpdateFileInfoToDbServer
                 if(".." == $item || "." == $item) {
                     continue;
                 }
-                $fileList[$item] = $this -> getFileList($type,$dir."/".$item);
+                $fileList[$item] = json_decode($this -> getFileList($type,$dir."/".$item)->getContent(),true);
             }
         }
-        return $fileList;
+        return returnAjax(200,$fileList,true);
     }
 
     /**
@@ -62,7 +62,7 @@ class UpdateFileInfoToDbServer
      *      ]
      * ]
      * @param string $dir 文件相对路径(相对于 app()->getRootPath()."/public/static/<music/video>File/") 默认为空
-     * @return array $msg 返回上传情况
+     * @return mixed $msg 返回上传情况
      * $msg = [
      *      error => [
      *          序号 => 信息,
@@ -81,7 +81,7 @@ class UpdateFileInfoToDbServer
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function updateFileListToDb(string $type, array $fileList = [], string $dir = ""): array
+    public function updateFileListToDb(string $type, array $fileList = [], string $dir = "")
     {
         $msg =[
             "error" => [],
@@ -90,11 +90,11 @@ class UpdateFileInfoToDbServer
         ];
 //        当得到的列表为空时自动获取对应类型的本地文件列表
         if (([] == $fileList )) {
-            $fileList = $this -> getFileList($type);
+            $fileList = json_decode($this -> getFileList($type,$dir)->getContent(),true)["msg"];
         }
         foreach ($fileList as $key => $item) {
             if(is_dir(app()->getRootPath()."public/static/".$type."File/".$key)) {
-                $msg = array_merge_recursive($msg,$this -> updateFileListToDb($type,$item,$key."/"));
+                $msg = array_merge_recursive($msg,json_decode($this -> updateFileListToDb($type,[],app()->getRootPath()."public/static/".$type."File/".$key."/")->getContent(),true)["msg"]);
                 continue;
             }
             $fileInfo = explode("-",$item,2);
@@ -124,7 +124,7 @@ class UpdateFileInfoToDbServer
                 $msg["info"][] = $data[$type."_author"]." - ".$data[$type."_name"]." 已存在";
             }
         }
-        return $msg;
+        return returnAjax(200,$msg,true);
     }
     /**
      * 更新数据库中状态非 -1(禁用) 的文件状态 若能在本地找到则状态为 1(正常) 找不到状态为 0(找不到资源)
@@ -142,7 +142,7 @@ class UpdateFileInfoToDbServer
         }else if("video" == $type){
             $fileInfoTable = new VideoFileListModel;
         }else {
-            return "类型错误";
+            return returnAjax(100,"类型错误",false);
         }
         $fileList = $fileInfoTable->where($type."_status","<>",-1)->select();
         foreach ($fileList as $item) {
@@ -155,6 +155,6 @@ class UpdateFileInfoToDbServer
                 $msg["notFound"][] =  "【".$fullFileName."】"." 文件找不到，状态修改为 0 ";
             }
         }
-        return $msg;
+        return returnAjax(200,$msg,true);
     }
 }

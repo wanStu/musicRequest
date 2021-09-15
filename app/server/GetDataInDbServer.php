@@ -4,12 +4,14 @@
 namespace app\server;
 
 
+use app\model\MusicFileListModel;
 use app\model\ThinkAuthRuleModel;
 use app\model\VideoFileListModel;
 use think\Collection;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\Model;
 use think\wenhainan\Auth;
 
 /**
@@ -29,13 +31,23 @@ class GetDataInDbServer
      */
     public function getFileListInDb(string $type) {
         if("music" == $type) {
-            $db = new ThinkAuthRuleModel();
+            $db = new MusicFileListModel();
         }else if($type == "video") {
             $db = new VideoFileListModel();
         }else {
-            return "类型错误";
+            return returnAjax(100, "类型错误",false);
         }
-        return $db->where($type."_status",1)->select()->toArray();
+        $result = $db->where($type."_status",1)->select()->toArray();
+        if($result) {
+            return returnAjax(200,$result,true);
+        }else {
+            if(0 == count($result)) {
+                return returnAjax(200,"暂无数据",true);
+            }else {
+                return returnAjax(100,"意外的错误",false);
+            }
+        }
+
     }
 
     /**
@@ -60,12 +72,12 @@ class GetDataInDbServer
         $ruleExist = in_array($ruleName,$ruleNameList);
         if($ruleExist) {
             if ((Auth::instance())->check($ruleName, $uid)) {
-                return true;
+                return returnAjax(200,"$ruleName 权限验证通过",true);
             } else {
-                return false;
+                return returnAjax(100,"用户 {$uid} 无 $ruleName 权限",false);
             }
         } else {
-            return false;
+            return returnAjax(100,"用户 {$uid} 无 $ruleName 权限",false);
         }
 
     }

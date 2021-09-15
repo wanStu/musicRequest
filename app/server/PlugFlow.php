@@ -31,29 +31,28 @@ class PlugFlow
             $taskReserved = json_decode($taskReservedList[0],true);
             if ($taskReserved["data"] == $filePath) {
                 $this->error = "{$fileName}已经在列表里了";
-                return false;
+                return returnAjax(100,"{$fileName}已经在列表里了",false);
             }
         }
         for($i = $taskNum;$i--;){
             $temp = json_decode($redis->lIndex("{queues:PushVideo}",$i),true);
             if($temp["data"] == $filePath) {
                 $this->error = "{$fileName}已经在列表里了";
-                return false;
+                return returnAjax(100,"{$fileName}已经在列表里了",false);
             }
         }
         $pushSuccess = Queue::push($jobClassName,$filePath,$jobQueueName);
         if(false !== $pushSuccess){
             $this->message = "任务 {$jobQueueName} 发布完成";
-            return true;
+            return returnAjax(200,"任务 {$jobQueueName} 发布完成",true);
         }else{
             $this->error = "任务 {$jobQueueName} 发布失败";
-            return false;
+            return returnAjax(100,"任务 {$jobQueueName} 发布失败",false);
         }
     }
 
     /**
      * 发布当播放列表为空时自动添加一个视频的任务
-     * @return bool
      */
     public function RandomRelease() {
         // 1.当前任务将由哪个类来负责处理。
@@ -67,15 +66,15 @@ class PlugFlow
         $taskReservedNum = $redis->zCard("{queues:RandomReleaseTask}:reserved");
         if($taskNum || $taskReservedNum) {
             $this->error = "已经开启";
-            return false;
+            return returnAjax(100,"已经开启",false);
         }
         $pushSuccess = Queue::push($jobClassName, "", $jobQueueName);
         if(false !== $pushSuccess){
             $this->message = "任务 {$jobQueueName} 发布完成";
-            return true;
+            return returnAjax(200,"任务 {$jobQueueName} 发布完成",true);
         }else{
             $this->error = "任务 {$jobQueueName} 发布失败";
-            return false;
+            return returnAjax(100,"任务 {$jobQueueName} 发布失败",false);
         }
     }
 
