@@ -5,6 +5,7 @@ namespace app\controller;
 
 
 use app\Base;
+use app\model\PlayListModel;
 use app\server\GetDataInDbServer;
 use app\server\PlugFlow;
 use app\server\UpdateFileInfoToDbServer;
@@ -162,11 +163,8 @@ class Index extends Base
      * 获取播放列表
      */
     public function getPlaylist() {
-        $redis = new Redis();
-        $redis -> connect("127.0.0.1");
-        $taskNum = $redis->lLen("{queues:PushVideo}");
-        $taskReservedNum = $redis->zCard("{queues:PushVideo}:reserved");
-        dd($taskNum + $taskReservedNum);
+        $result = PlayListModel::where("is_delete",0)->field("uid,file_name,create_time")->select()->toArray();
+        return returnAjax(200,"获取成功",$result);
     }
 
 }

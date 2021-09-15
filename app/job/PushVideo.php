@@ -4,10 +4,10 @@
 namespace app\job;
 
 
-use app\model\PlayListModel;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
 use think\queue\Job;
+
 class PushVideo
 {
     /**
@@ -15,11 +15,9 @@ class PushVideo
      * @param $data
      */
     public function fire(Job $job, $data) {
+        $job->delete();
         $jobDone = $this->pushStart($job,$data);
-        if($jobDone) {
-            $job->delete();
-        }
-
+        return true;
     }
     /**
      * 推流视频
@@ -43,13 +41,16 @@ class PushVideo
             ->setAdditionalParameters(["-f","flv"]);
         $fileInfo = explode("/",$videoUrl);
         echo "开始播放 ".$fileInfo[count($fileInfo)-1],PHP_EOL;
-        if ($job->attempts() > 2) {
-            echo  "5s后开始第".$job->attempts()."次执行！",PHP_EOL,"将删除任务并最后执行一次";
-            $job->delete();
-        }else {
-            echo "5s后开始第".$job->attempts()."次执行！",PHP_EOL;
-        }
-        sleep(5);
+        $format->on('progress', function ($audio, $format, $percentage) {
+            static $percentageCopy = 0;
+            if($percentage != $percentageCopy) {
+                $percentageCopy = $percentage;
+                echo "进度 {$percentage} % ",PHP_EOL;
+                if(49 < $percentageCopy) {
+                   die();
+                }
+            }
+        });
         $video->save($format, $pushPath);
         return true;
     }

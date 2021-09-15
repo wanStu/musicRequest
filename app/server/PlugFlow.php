@@ -2,6 +2,7 @@
 
 
 namespace app\server;
+use app\model\JobsModel;
 use app\model\PlayListModel;
 use Redis;
 use think\Cache;
@@ -40,11 +41,8 @@ class PlugFlow
         $jobClassName  = 'app\job\RandomRelease';
         // 2.当前任务归属的队列名称，如果为新队列，会自动创建
         $jobQueueName = "RandomReleaseTask";
-        $redis = new Redis();
-        $redis -> connect("127.0.0.1");
-        $taskNum = $redis->lLen("{queues:RandomReleaseTask}");
-        $taskReservedNum = $redis->zCard("{queues:RandomReleaseTask}:reserved");
-        if($taskNum || $taskReservedNum) {
+        $sum = JobsModel::where("queue","RandomReleaseTask")->count();
+        if($sum > 0) {
             $this->error = "已经开启";
             return returnAjax(100,"已经开启",false);
         }

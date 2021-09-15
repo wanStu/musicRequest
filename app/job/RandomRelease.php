@@ -4,9 +4,9 @@
 namespace app\job;
 
 
+use app\model\JobsModel;
 use app\model\PlayListModel;
 use app\server\PlugFlow;
-use Redis;
 use app\server\GetDataInDbServer;
 use think\facade\Queue;
 use think\Log;
@@ -26,10 +26,8 @@ class RandomRelease
         $this->randomRelease();
     }
     public function randomRelease() {
-        $redis = new Redis();
-        $redis -> connect("127.0.0.1");
-        $sum = $redis->lLen("{queues:PushVideo}") + $redis->zCard("{queues:PushVideo}:reserved");
-        if($sum == 0) {
+        $sum = JobsModel::where("queue","PushVideo")->count();
+        if($sum < 2) {
             $filePath = PlayListModel::where("is_delete",0)->order("create_time","ASC")->find();
             $jobClassName  = 'app\job\PushVideo';
             $jobQueueName = "PushVideo";
@@ -40,7 +38,7 @@ class RandomRelease
                     echo "成功".PHP_EOL;
                     PlayListModel::where("file_path",$filePath->file_path)
                         ->where("is_delete",0)
-                        ->data(["is_delete" => 1,"update_time" => date("Y-m-d ,H:i:s",time())])
+                        ->data(["is_delete" => 1,"update_time" => date("Y-m-d ,H:i:s",time()),"delete_time" => date("Y-m-d ,H:i:s",time())])
                         ->update();
                     Log::info($filePath." 添加到播放列表成功");
                 }
@@ -64,8 +62,6 @@ class RandomRelease
                 sleep(1);
             }
             return true;
-        }else {
-            sleep(1);
         }
         return false;
     }

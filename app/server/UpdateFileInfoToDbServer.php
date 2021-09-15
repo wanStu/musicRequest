@@ -2,6 +2,7 @@
 
 
 namespace app\server;
+use app\model\JobsModel;
 use app\model\PlayListModel;
 use app\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
@@ -110,7 +111,7 @@ class UpdateFileInfoToDbServer
             }
             $fileInfoTable = new class {};
             if("music" == $type) {
-                $fileInfoTable = new PlayListModel;
+                $fileInfoTable = new JobsModel();
             }else if("video" == $type) {
                 $fileInfoTable = new VideoFileListModel;
             }
