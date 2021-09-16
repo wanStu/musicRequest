@@ -4,6 +4,7 @@
 namespace app\job;
 
 
+use app\model\LiveServerModel;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
 use think\queue\Job;
@@ -31,8 +32,8 @@ class PushVideo
             'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe",
             'timeout'          => 600
         ]);
-
-        $pushPath = "rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_188609215_9315200&key=ce264338a2392806e0634a40e63df74d&schedule=rtmp&pflag=1";
+        $server = LiveServerModel::find(1)->toArray();
+        $pushPath = $server["server_path"].$server["server_key"];
         $fileInfo = explode("/",$videoUrl);
         $video = $ffmpeg->open($videoUrl);
         $pushVideo = new X264();
