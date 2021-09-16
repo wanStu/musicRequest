@@ -2,8 +2,8 @@
 
 
 namespace app\server;
-use app\model\MusicFileListModel;
-use app\model\ThinkAuthRuleModel;
+use app\model\JobsModel;
+use app\model\PlayListModel;
 use app\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -44,10 +44,10 @@ class UpdateFileInfoToDbServer
                 if(".." == $item || "." == $item) {
                     continue;
                 }
-                $fileList[$item] = $this -> getFileList($type,$dir."/".$item);
+                $fileList[$item] = json_decode($this -> getFileList($type,$dir."/".$item)->getContent(),true);
             }
         }
-        return $fileList;
+        return returnAjax(200,$fileList,true);
     }
 
     /**
@@ -63,7 +63,7 @@ class UpdateFileInfoToDbServer
      *      ]
      * ]
      * @param string $dir 文件相对路径(相对于 app()->getRootPath()."/public/static/<music/video>File/") 默认为空
-     * @return array $msg 返回上传情况
+     * @return mixed $msg 返回上传情况
      * $msg = [
      *      error => [
      *          序号 => 信息,
@@ -82,29 +82,36 @@ class UpdateFileInfoToDbServer
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function updateDb(string $type, array $fileList = [], string $dir = ""): array
+    public function updateFileListToDb(string $type, array $fileList = [], string $dir = "")
     {
         $msg =[
             "error" => [],
             "success"   => [],
             "info" => []
         ];
-        if (($fileList == [])) {
-            $fileList = $this -> getFileList($type);
+//        当得到的列表为空时自动获取对应类型的本地文件列表
+        if (([] == $fileList )) {
+            $fileList = json_decode($this -> getFileList($type,$dir)->getContent(),true)["msg"];
         }
         foreach ($fileList as $key => $item) {
             if(is_dir(app()->getRootPath()."public/static/".$type."File/".$key)) {
-                $msg = array_merge_recursive($msg,$this -> updateDb($type,$item,$key."/"));
+                $msg = array_merge_recursive($msg,json_decode($this -> updateFileListToDb($type,[],app()->getRootPath()."public/static/".$type."File/".$key."/")->getContent(),true)["msg"]);
                 continue;
             }
             $fileInfo = explode("-",$item,2);
             $fileInfo[] = "/static/".$type."File/{$dir}";
-            $data[$type."_author"] = trim($fileInfo[0]);
-            $data[$type."_name"] = trim($fileInfo[1]);
-            $data[$type."_dir"] = $fileInfo[2];
+            if(strpos($item,"-")) {
+                $data[$type."_author"] = trim($fileInfo[0]);
+                $data[$type."_name"] = trim($fileInfo[1]);
+                $data[$type."_dir"] = $fileInfo[2];
+            }else {
+                $data[$type."_author"] = "未知";
+                $data[$type."_name"] = trim($fileInfo[0]);
+                $data[$type."_dir"] = $fileInfo[1];
+            }
             $fileInfoTable = new class {};
             if("music" == $type) {
-                $fileInfoTable = new ThinkAuthRuleModel;
+                $fileInfoTable = new JobsModel();
             }else if("video" == $type) {
                 $fileInfoTable = new VideoFileListModel;
             }
@@ -118,7 +125,7 @@ class UpdateFileInfoToDbServer
                 $msg["info"][] = $data[$type."_author"]." - ".$data[$type."_name"]." 已存在";
             }
         }
-        return $msg;
+        return returnAjax(200,$msg,true);
     }
     /**
      * 更新数据库中状态非 -1(禁用) 的文件状态 若能在本地找到则状态为 1(正常) 找不到状态为 0(找不到资源)
@@ -132,15 +139,15 @@ class UpdateFileInfoToDbServer
         $msg = [];
         $fileInfoTable = (object)[];
         if("music" == $type) {
-            $fileInfoTable = new MusicFileListModel;
+            $fileInfoTable = new PlayListModel;
         }else if("video" == $type){
             $fileInfoTable = new VideoFileListModel;
         }else {
-            return "类型错误";
+            return returnAjax(100,"类型错误",false);
         }
         $fileList = $fileInfoTable->where($type."_status","<>",-1)->select();
         foreach ($fileList as $item) {
-            $fullFileName = $item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"];
+            $fullFileName = str_replace("未知 - ","",$item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"]);
             if(file_exists(app()->getRootPath()."public". $fullFileName)) {
                 $fileInfoTable::update([$type."_status" => 1],[$type."_id" => $item[$type."_id"]]);
                 $msg["find"][] =  "【".$fullFileName."】"." 可以找到，状态修改为 1 ";
@@ -149,6 +156,6 @@ class UpdateFileInfoToDbServer
                 $msg["notFound"][] =  "【".$fullFileName."】"." 文件找不到，状态修改为 0 ";
             }
         }
-        return $msg;
+        return returnAjax(200,$msg,true);
     }
 }

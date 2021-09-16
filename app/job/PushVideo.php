@@ -7,6 +7,7 @@ namespace app\job;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
 use think\queue\Job;
+
 class PushVideo
 {
     /**
@@ -14,28 +15,8 @@ class PushVideo
      * @param $data
      */
     public function fire(Job $job, $data) {
-        $missionContinues = $this->checkMissionContinuesOrNot($data);
-        if(!$missionContinues){
-            $job->delete();
-            return;
-        }
-        $jobDone = $this->pushStart($data);
-        if ($jobDone) {
-            $job->delete();
-        }else{
-            if ($job->attempts() > 5) {
-                ECHO "这个任务已经重试了5次!",PHP_EOL;
-                $job->delete();
-            }
-        }
-    }
-    /**
-     * 有些消息在到达消费者时,可能已经不再需要执行了
-     * @param array|mixed $data 将被推流的视频路径
-     * @return boolean                 任务执行的结果
-     */
-    private function checkMissionContinuesOrNot($data): bool
-    {
+        $job->delete();
+        $jobDone = $this->pushStart($job,$data);
         return true;
     }
     /**
@@ -43,29 +24,34 @@ class PushVideo
      * @param string $videoUrl 将被推流的视频路径
      * @return bool
      */
-    private function pushStart(string $videoUrl): bool
+    private function pushStart(Job $job,string $videoUrl): bool
     {
-        echo "开始播放",PHP_EOL;
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries'  => root_path() . "public/static/ffmpeg/ffmpeg.exe",
-            'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe"
+            'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe",
+            'timeout'          => 360
         ]);
+
         $pushPath = "rtmp://live-push.bilivideo.com/live-bvc/?streamname=live_188609215_9315200&key=ce264338a2392806e0634a40e63df74d&schedule=rtmp&pflag=1";
         $video = $ffmpeg->open($videoUrl);
         $format = new X264();
-        $format->on('progress', function ($video, $format, $percentage) {
-            static $RateProgress = 0;
-            if($RateProgress != $percentage) {
-                $RateProgress = $percentage;
-                echo "播放进度 $percentage %",PHP_EOL;
-            }
-        });
         $format
             ->setInitialParameters(["-re","-i"])
             ->setAudioKiloBitrate(192)
             ->setAdditionalParameters(["-f","flv"]);
+        $fileInfo = explode("/",$videoUrl);
+        echo "开始播放 ".$fileInfo[count($fileInfo)-1],PHP_EOL;
+        $format->on('progress', function ($audio, $format, $percentage) {
+            static $percentageCopy = 0;
+            if($percentage != $percentageCopy) {
+                $percentageCopy = $percentage;
+                echo "进度 {$percentage} % ",PHP_EOL;
+                if(49 < $percentageCopy) {
+                   die();
+                }
+            }
+        });
         $video->save($format, $pushPath);
-        echo "结束播放",PHP_EOL;
-        return false;
+        return true;
     }
 }
