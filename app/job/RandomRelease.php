@@ -27,7 +27,7 @@ class RandomRelease
     }
     public function randomRelease() {
         $sum = JobsModel::where("queue","PushVideo")->count();
-        if($sum < 2) {
+        if($sum < 1) {
             $filePath = PlayListModel::where("is_delete",0)->order("create_time","ASC")->find();
             $jobClassName  = 'app\job\PushVideo';
             $jobQueueName = "PushVideo";
