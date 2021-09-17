@@ -105,7 +105,7 @@ class UpdateFileInfoToDbServer
                 $data[$type."_name"] = trim($fileInfo[1]);
                 $data[$type."_dir"] = $fileInfo[2];
             }else {
-                $data[$type."_author"] = "未知";
+                $data[$type."_author"] ="";
                 $data[$type."_name"] = trim($fileInfo[0]);
                 $data[$type."_dir"] = $fileInfo[1];
             }
@@ -117,12 +117,24 @@ class UpdateFileInfoToDbServer
             }
             if(!$fileInfoTable->where($type."_name",$data[$type."_name"])->where($type."_author",$data[$type."_author"])->find()) {
                 if(!$fileInfoTable::create($data)) {
-                    $msg["error"][] = $data[$type."_author"] . " - " . $data[$type."_name"] . "添加失败";
+                    if($data[$type."_author"] != "") {
+                        $msg["error"][] = $data[$type."_author"] . " - " . $data[$type."_name"] . "添加失败";
+                    }else {
+                        $msg["error"][] = "未知 - " . $data[$type."_name"] . "添加失败";
+                    }
                 }else {
-                    $msg["success"][] = $data[$type."_author"] . " - " . $data[$type."_name"] . " 添加成功";
+                    if($data[$type."_author"] != "") {
+                        $msg["success"][] = $data[$type."_author"] . " - " . $data[$type."_name"] . " 添加成功";
+                    }else {
+                        $msg["success"][] = "未知 - " . $data[$type."_name"] . " 添加成功";
+                    }
                 }
             }else {
-                $msg["info"][] = $data[$type."_author"]." - ".$data[$type."_name"]." 已存在";
+                if($data[$type."_author"] != "") {
+                    $msg["info"][] = $data[$type."_author"]." - ".$data[$type."_name"]." 已存在";
+                }else {
+                    $msg["info"][] = "未知 - ".$data[$type."_name"]." 已存在";
+                }
             }
         }
         return returnAjax(200,$msg,true);
@@ -148,6 +160,11 @@ class UpdateFileInfoToDbServer
         $fileList = $fileInfoTable->where($type."_status","<>",-1)->select();
         foreach ($fileList as $item) {
             $fullFileName = str_replace("未知 - ","",$item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"]);
+            if($item[$type."_author"] == "") {
+                $fullFileName = $item[$type."_dir"].$item[$type."_author"].$item[$type."_name"];
+            }else {
+                $fullFileName = $item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"];
+            }
             if(file_exists(app()->getRootPath()."public". $fullFileName)) {
                 $fileInfoTable::update([$type."_status" => 1],[$type."_id" => $item[$type."_id"]]);
                 $msg["find"][] =  "【".$fullFileName."】"." 可以找到，状态修改为 1 ";
