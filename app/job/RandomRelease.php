@@ -32,7 +32,7 @@ class RandomRelease
             $jobClassName  = 'app\job\PushVideo';
             $jobQueueName = "PushVideo";
             if($filePath) {
-                echo "将 ".$filePath->file_name." 添加到待播放";
+                echo "将 ".$filePath->file_name." 添加到即将播放";
                 $addSuccess = Queue::push($jobClassName,$filePath->file_path,$jobQueueName);
                 if($addSuccess) {
                     echo "成功".PHP_EOL;
@@ -40,10 +40,10 @@ class RandomRelease
                         ->where("is_delete",0)
                         ->data(["is_delete" => 1,"update_time" => date("Y-m-d ,H:i:s",time()),"delete_time" => date("Y-m-d ,H:i:s",time())])
                         ->update();
-                    Log::info($filePath." 添加到播放列表成功");
+                    Log::info($filePath." 添加到即将播放列表成功");
                 }
             }else {
-                echo "出现异常 没有将 ".$filePath." 添加到待播放".PHP_EOL;
+                echo "出现异常 没有将 ".$filePath." 添加到即将播放".PHP_EOL;
             }
         }
         $playlistCount = PlayListModel::where("is_delete",0)->count();
