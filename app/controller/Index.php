@@ -48,7 +48,6 @@ class Index extends Base
     {
         if(in_array($type,$this::FILE_TYPE)) {
             $result = json_decode((new UpdateFileInfoToDbServer)->updateFileListToDb($type, $fileList)->getContent(),true);
-            halt($result);
             if($result["data"]) {
                 return returnAjax(200,"更新成功",true);
             }else {
