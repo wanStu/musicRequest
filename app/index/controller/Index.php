@@ -9,6 +9,7 @@ use app\common\model\PlayListModel;
 use app\common\server\GetDataInDbServer;
 use app\common\server\PlugFlow;
 use app\common\server\UpdateFileInfoToDbServer;
+use app\common\server\ValidateUser;
 use think\facade\Log;
 
 /**
@@ -43,6 +44,12 @@ class Index extends Base
      */
     public function updateFileDataToDb($type = "",$fileList = [])
     {
+        if($type == "" && !empty($this->requestData["type"])) {
+            $type = $this->requestData["type"];
+        }
+        if($fileList == "" && !empty($this->requestData["fileList"])) {
+            $fileList = $this->requestData["fileList"];
+        }
         if(in_array($type,$this::FILE_TYPE)) {
             $result = json_decode((new UpdateFileInfoToDbServer($this->app))->updateFileListToDb($type, $fileList)->getContent(),true);
             if($result["data"]) {
@@ -62,7 +69,10 @@ class Index extends Base
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function updateFileStatusInDb($type) {
+    public function updateFileStatusInDb($type = "") {
+        if($type == "" && !empty($this->requestData["type"])) {
+            $type = $this->requestData["type"];
+        }
         $result = json_decode((new UpdateFileInfoToDbServer($this->app))->updateFileStatusInDb("{$type}")->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
@@ -78,8 +88,11 @@ class Index extends Base
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getFileList(string $type)
+    public function getFileList(string $type = "")
     {
+        if($type == "" && !empty($this->requestData["type"])) {
+            $type = $this->requestData["type"];
+        }
         $result = json_decode((new GetDataInDbServer($this->app))->getFileListInDb($type)->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
@@ -96,11 +109,20 @@ class Index extends Base
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function validateUserPermission(string $ruleName, int $uid)
+    public function validateUserPermission(string $ruleName = "", int $user_id = 0)
     {
+        if($user_id == 0) {
+            $user_id = $this->userId;
+        }
+        if($ruleName == "" && !empty($this->requestData["ruleName"])) {
+            $ruleName = $this->requestData["ruleName"];
+        }
+        if($user_id == 0 && !empty($this->requestData["user_id"])) {
+            $user_id = $this->requestData["user_id"];
+        }
         $ruleName = str_replace(" ","",$ruleName);
-        $uid = str_replace(" ","",$uid);
-        $result = json_decode((new GetDataInDbServer($this->app))->validateUserPermission($ruleName,$uid)->getContent(),true);
+        $user_id = str_replace(" ","",$user_id);
+        $result = json_decode((new ValidateUser($this->app))->validateUserPermission($ruleName,$user_id)->getContent(),true);
         if ($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -118,16 +140,27 @@ class Index extends Base
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function releaseLiveTask(string $data,$ruleName,$uid)
+    public function releaseLiveTask(string $data = "",string $ruleName = "",int $user_id = 0)
     {
-
-        $result = json_decode((new GetDataInDbServer($this->app))->validateUserPermission($ruleName, $uid)->getContent(),true);
+        if($user_id == 0) {
+            $user_id = $this->userId;
+        }
+        if($ruleName == "" && !empty($this->requestData["ruleName"])) {
+            $ruleName = $this->requestData["ruleName"];
+        }
+        if($user_id == 0 && !empty($this->requestData["user_id"])) {
+            $user_id = $this->requestData["user_id"];
+        }
+        if($data == "" && !empty($this->requestData["data"])) {
+            $data = $this->requestData["data"];
+        }
+        $result = json_decode((new ValidateUser($this->app))->validateUserPermission($this->requestData["ruleName"], $this->userId)->getContent(),true);
         if(!$result["data"]) {
             return returnAjax(100,$result["msg"],false);
         }
         if(is_file($data)) {
-            $release = new PlugFlow();
-            $releaseTaskResult = json_decode($release->liveStart($data,$uid)->getContent(),true);
+            $release = new PlugFlow($this->app);
+            $releaseTaskResult = json_decode($release->liveStart($data,$user_id)->getContent(),true);
             if($releaseTaskResult["data"]) {
                 return returnAjax(200,"点播完成，等待播放吧",true);
             } else {

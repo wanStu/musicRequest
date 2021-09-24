@@ -150,6 +150,9 @@ class UpdateFileInfoToDbServer extends Base
      * @throws ModelNotFoundException
      */
     public function updateFileStatusInDb(string $type = ""){
+        if($type == "" && !empty($this->requestData["type"])) {
+            $type = $this->requestData["type"];
+        }
         $msg = [];
         if("music" == $type) {
             $fileInfoTable = new MusicFileListModel();

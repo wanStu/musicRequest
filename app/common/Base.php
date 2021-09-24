@@ -10,10 +10,11 @@ class Base extends BaseController
 {
     const FILE_TYPE = ["video","music"];
     public array $requestData;
+    public string $userId;
     public function initialize() {
         $this->requestData = request()->param();
         try {
-            JWTAuth::auth();
+            $this->userId = JWTAuth::auth()["user_id"]->getValue();
         }catch (JWTException $e) {
             $msg = "";
             switch ($e->getMessage()) {

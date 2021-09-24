@@ -42,7 +42,7 @@ class Login extends BaseController
             return returnAjax(100,"用户名或密码错误",false);
         }else {
             $data["token"] = JWTAuth::builder(["user_id" => $userId["user_id"]]);
-            cookie("token",$data["token"]);
+            cookie("token",$data["token"],86400);
             return returnAjax(200,"登陆成功",$data);
         }
 

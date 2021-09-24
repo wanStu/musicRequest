@@ -27,7 +27,10 @@ class GetDataInDbServer extends Base
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function getFileListInDb(string $type) {
+    public function getFileListInDb(string $type = "") {
+        if($type == "" && !empty($this->requestData["type"])) {
+            $type = $this->requestData["type"];
+        }
         if("music" == $type) {
             $db = new MusicFileListModel();
         }else if($type == "video") {
