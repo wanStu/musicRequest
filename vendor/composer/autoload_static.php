@@ -7,15 +7,16 @@ namespace Composer\Autoload;
 class ComposerStaticInite649252ddd550e22805b20c62c875176
 {
     public static $files = array (
-        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '9b552a3cc426e3287cc811caefa3cf53' => __DIR__ . '/..' . '/topthink/think-helper/src/helper.php',
-        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '35fab96057f1bf5e7aba31a8a6d5fdde' => __DIR__ . '/..' . '/topthink/think-orm/stubs/load_stubs.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
+        'cc25fa796cd7d2989f16cf9daf45371d' => __DIR__ . '/..' . '/thans/tp-jwt-auth/src/helper.php',
         'cc56288302d9df745d97c934d6a6e5f0' => __DIR__ . '/..' . '/topthink/think-queue/src/common.php',
     );
 
@@ -23,10 +24,11 @@ class ComposerStaticInite649252ddd550e22805b20c62c875176
         't' => 
         array (
             'think\\wenhainan\\' => 16,
-            'think\\view\\driver\\' => 18,
             'think\\trace\\' => 12,
             'think\\migration\\' => 16,
+            'think\\app\\' => 10,
             'think\\' => 6,
+            'thans\\jwt\\' => 10,
         ),
         'a' => 
         array (
@@ -57,6 +59,7 @@ class ComposerStaticInite649252ddd550e22805b20c62c875176
             'League\\MimeTypeDetection\\' => 25,
             'League\\Flysystem\\Cached\\' => 24,
             'League\\Flysystem\\' => 17,
+            'Lcobucci\\JWT\\' => 13,
         ),
         'J' => 
         array (
@@ -79,10 +82,6 @@ class ComposerStaticInite649252ddd550e22805b20c62c875176
         array (
             0 => __DIR__ . '/..' . '/wenhainan/thinkphp6-auth/src',
         ),
-        'think\\view\\driver\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/topthink/think-view/src',
-        ),
         'think\\trace\\' => 
         array (
             0 => __DIR__ . '/..' . '/topthink/think-trace/src',
@@ -91,13 +90,20 @@ class ComposerStaticInite649252ddd550e22805b20c62c875176
         array (
             0 => __DIR__ . '/..' . '/topthink/think-migration/src',
         ),
+        'think\\app\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/topthink/think-multi-app/src',
+        ),
         'think\\' => 
         array (
             0 => __DIR__ . '/..' . '/topthink/framework/src/think',
             1 => __DIR__ . '/..' . '/topthink/think-helper/src',
             2 => __DIR__ . '/..' . '/topthink/think-orm/src',
             3 => __DIR__ . '/..' . '/topthink/think-queue/src',
-            4 => __DIR__ . '/..' . '/topthink/think-template/src',
+        ),
+        'thans\\jwt\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/thans/tp-jwt-auth/src',
         ),
         'app\\' => 
         array (
@@ -170,6 +176,10 @@ class ComposerStaticInite649252ddd550e22805b20c62c875176
         'League\\Flysystem\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
+        ),
+        'Lcobucci\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/lcobucci/jwt/src',
         ),
         'JaguarJack\\MigrateGenerator\\' => 
         array (
