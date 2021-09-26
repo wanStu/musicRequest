@@ -6,8 +6,8 @@ namespace app\common\model;
 
 use think\Model;
 
-class ThinkAuthRuleModel extends Model
+class AuthRuleModel extends Model
 {
-    protected $table = "think_auth_rule";
+    protected $table = "auth_rule";
     protected $pk = "id";
 }

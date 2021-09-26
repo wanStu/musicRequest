@@ -7,6 +7,7 @@ namespace app\index\controller;
 use app\common\Base;
 use app\common\model\PlayListModel;
 use app\common\server\GetDataInDbServer;
+use app\common\server\Permission;
 use app\common\server\PlugFlow;
 use app\common\server\UpdateFileInfoToDbServer;
 use app\common\server\ValidateUser;
@@ -196,4 +197,38 @@ class Index extends Base
         return returnAjax(200,"获取成功",$result);
     }
 
+    public function editPermissionToGroup() {
+        $result = json_decode((new Permission($this->app))->editPermissionToGroup()->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],true);
+        }else {
+            return returnAjax(100,$result["msg"],false);
+        }
+    }
+
+    public function getPermissionListOnGroup() {
+        $result = json_decode((new Permission($this->app))->getPermissionListOnGroup()->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],$result["data"]);
+        }else {
+            return returnAjax(100,$result["msg"],false);
+        }
+    }
+    public function getPermissionListOnUser() {
+        $result = json_decode((new Permission($this->app))->getPermissionListOnUser()->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],$result["data"]);
+        }else {
+            return returnAjax(100,$result["msg"],false);
+        }
+    }
+
+    public function getGroupOnfoOnUser() {
+        $result = json_decode((new Permission($this->app))->getGroupOnfoOnUser()->getContent(),true);
+        if($result["data"]) {
+            return returnAjax(200,$result["msg"],$result["data"]);
+        }else {
+            return returnAjax(100,$result["msg"],false);
+        }
+    }
 }
