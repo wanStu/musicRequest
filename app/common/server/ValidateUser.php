@@ -5,7 +5,7 @@ namespace app\common\server;
 
 
 use app\common\Base;
-use app\common\model\AuthGroupModel;
+use app\common\model\AuthRuleModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -25,7 +25,7 @@ class ValidateUser extends Base
      * @throws ModelNotFoundException
      */
     public function validateUserPermission(string $ruleName, int $user_id) {
-        $ruleNameList = AuthGroupModel::field("name")->select();
+        $ruleNameList = AuthRuleModel::field("name")->select();
         $ruleNameList = json_decode($ruleNameList,true);
         $tempRuleList = [];
         foreach ($ruleNameList as $item) {

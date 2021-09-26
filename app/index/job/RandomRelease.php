@@ -6,6 +6,7 @@ namespace app\index\job;
 
 use app\common\model\JobsModel;
 use app\common\model\PlayListModel;
+use app\common\model\VideoFileListModel;
 use app\common\server\PlugFlow;
 use app\common\server\GetDataInDbServer;
 use think\facade\Queue;
@@ -14,6 +15,10 @@ use think\queue\Job;
 
 class RandomRelease
 {
+
+    public function __construct() {
+        $this->requestData = request()->param();
+    }
     /**
      * @param Job $job
      * @param $data
@@ -41,10 +46,14 @@ class RandomRelease
                         ->data(["is_delete" => 1,"update_time" => date("Y-m-d ,H:i:s",time()),"delete_time" => date("Y-m-d ,H:i:s",time())])
                         ->update();
                     Log::info($filePath." 添加到即将播放列表成功");
+                }else {
+                    echo "出现异常 没有将 ".$filePath." 添加到即将播放".PHP_EOL;
                 }
             }else {
-                echo "出现异常 没有将 ".$filePath." 添加到即将播放".PHP_EOL;
+                echo "播放列表为空".PHP_EOL;
             }
+        }else {
+            echo "发布任务正常运行".PHP_EOL;
         }
         $playlistCount = PlayListModel::where("is_delete",0)->count();
         if($playlistCount < 2) {
@@ -59,9 +68,11 @@ class RandomRelease
                 if(json_decode((new PlugFlow()) -> liveStart($fileFullName,0)->getContent(),true)["data"]) {
                     echo "播放列表内数量过少，将自动播放 【".$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"]."】",PHP_EOL;
                 }
-                sleep(1);
             }
             return true;
+        }else {
+            echo "添加播放列表正常运行".PHP_EOL;
+            sleep(1);
         }
         return false;
     }

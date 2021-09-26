@@ -2,16 +2,15 @@
 
 
 namespace app\common;
-use app\BaseController;
 use thans\jwt\exception\JWTException;
 use thans\jwt\facade\JWTAuth;
 
-class Base extends BaseController
+class Base
 {
     const FILE_TYPE = ["video","music"];
     public array $requestData;
     public string $userId;
-    public function initialize() {
+    public function __construct() {
         $this->requestData = request()->param();
         try {
             $this->userId = JWTAuth::auth()["user_id"]->getValue();

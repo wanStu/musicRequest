@@ -103,6 +103,16 @@ class Permission extends Base
     }
 
     /**
+     * 获取权限列表
+     * @return \type
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function getPermissionList() {
+        return returnAjax(200,"获取成功",AuthRuleModel::field("id,title,status,type")->select());
+    }
+    /**
      * 获取 用户权限列表
      * @return \type
      * @throws \think\db\exception\DataNotFoundException

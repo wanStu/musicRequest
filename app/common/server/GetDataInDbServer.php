@@ -17,8 +17,11 @@ use think\db\exception\ModelNotFoundException;
  * Class getDataInDbServer
  * @package app\server
  */
-class GetDataInDbServer extends Base
+class GetDataInDbServer
 {
+    public function __construct() {
+        $this->requestData = request()->param();
+    }
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
@@ -38,12 +41,12 @@ class GetDataInDbServer extends Base
         }else {
             return returnAjax(100, "类型错误",false);
         }
-        $result = $db->where($type."_status",1)->select()->toArray();
+        $result = $db->where($type."_status",1)->field("video_id,video_author,video_name,video_dir")->select();
         if($result) {
             return returnAjax(200,$result,true);
         }else {
             if(0 == count($result)) {
-                return returnAjax(200,"暂无数据",true);
+                return returnAjax(100,"暂无数据",false);
             }else {
                 return returnAjax(100,"意外的错误",false);
             }

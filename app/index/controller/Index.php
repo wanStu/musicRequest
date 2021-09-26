@@ -52,7 +52,7 @@ class Index extends Base
             $fileList = $this->requestData["fileList"];
         }
         if(in_array($type,$this::FILE_TYPE)) {
-            $result = json_decode((new UpdateFileInfoToDbServer($this->app))->updateFileListToDb($type, $fileList)->getContent(),true);
+            $result = json_decode((new UpdateFileInfoToDbServer())->updateFileListToDb($type, $fileList)->getContent(),true);
             if($result["data"]) {
                 return returnAjax(200,"更新成功",true);
             }else {
@@ -74,7 +74,7 @@ class Index extends Base
         if($type == "" && !empty($this->requestData["type"])) {
             $type = $this->requestData["type"];
         }
-        $result = json_decode((new UpdateFileInfoToDbServer($this->app))->updateFileStatusInDb("{$type}")->getContent(),true);
+        $result = json_decode((new UpdateFileInfoToDbServer())->updateFileStatusInDb("{$type}")->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -94,7 +94,7 @@ class Index extends Base
         if($type == "" && !empty($this->requestData["type"])) {
             $type = $this->requestData["type"];
         }
-        $result = json_decode((new GetDataInDbServer($this->app))->getFileListInDb($type)->getContent(),true);
+        $result = json_decode((new GetDataInDbServer())->getFileListInDb($type)->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -123,7 +123,7 @@ class Index extends Base
         }
         $ruleName = str_replace(" ","",$ruleName);
         $user_id = str_replace(" ","",$user_id);
-        $result = json_decode((new ValidateUser($this->app))->validateUserPermission($ruleName,$user_id)->getContent(),true);
+        $result = json_decode((new ValidateUser())->validateUserPermission($ruleName,$user_id)->getContent(),true);
         if ($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -155,12 +155,12 @@ class Index extends Base
         if($data == "" && !empty($this->requestData["data"])) {
             $data = $this->requestData["data"];
         }
-        $result = json_decode((new ValidateUser($this->app))->validateUserPermission($this->requestData["ruleName"], $this->userId)->getContent(),true);
+        $result = json_decode((new ValidateUser())->validateUserPermission($this->requestData["ruleName"], $this->userId)->getContent(),true);
         if(!$result["data"]) {
             return returnAjax(100,$result["msg"],false);
         }
         if(is_file($data)) {
-            $release = new PlugFlow($this->app);
+            $release = new PlugFlow();
             $releaseTaskResult = json_decode($release->liveStart($data,$user_id)->getContent(),true);
             if($releaseTaskResult["data"]) {
                 return returnAjax(200,"点播完成，等待播放吧",true);
@@ -180,7 +180,7 @@ class Index extends Base
      * 开启 当播放列表为空时自动添加一个视频
      */
     public function randomRelease() {
-        $plugFlow = new PlugFlow($this->app);
+        $plugFlow = new PlugFlow();
         $result = json_decode($plugFlow->RandomRelease()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
@@ -198,7 +198,7 @@ class Index extends Base
     }
 
     public function editPermissionToGroup() {
-        $result = json_decode((new Permission($this->app))->editPermissionToGroup()->getContent(),true);
+        $result = json_decode((new Permission())->editPermissionToGroup()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -207,7 +207,7 @@ class Index extends Base
     }
 
     public function getPermissionListOnGroup() {
-        $result = json_decode((new Permission($this->app))->getPermissionListOnGroup()->getContent(),true);
+        $result = json_decode((new Permission())->getPermissionListOnGroup()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],$result["data"]);
         }else {
@@ -215,7 +215,7 @@ class Index extends Base
         }
     }
     public function getPermissionListOnUser() {
-        $result = json_decode((new Permission($this->app))->getPermissionListOnUser()->getContent(),true);
+        $result = json_decode((new Permission())->getPermissionListOnUser()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],$result["data"]);
         }else {
@@ -224,11 +224,16 @@ class Index extends Base
     }
 
     public function getGroupOnfoOnUser() {
-        $result = json_decode((new Permission($this->app))->getGroupOnfoOnUser()->getContent(),true);
+        $result = json_decode((new Permission())->getGroupOnfoOnUser()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],$result["data"]);
         }else {
             return returnAjax(100,$result["msg"],false);
         }
+    }
+
+    public function getPermissionList() {
+        $result = json_decode((new Permission())->getPermissionList()->getContent(),true);
+        return returnAjax(200,$result["msg"],$result["data"]);
     }
 }
