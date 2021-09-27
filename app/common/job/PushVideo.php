@@ -31,6 +31,21 @@ class PushVideo
      */
     private function pushStart(Job $job,string $videoUrl): bool
     {
+        $system = php_uname();
+        if(strstr($system,"Windows")) {
+            echo "Windows 环境",PHP_EOL;
+            $ffmpeg = FFMpeg::create([
+                'ffmpeg.binaries'  => root_path() . "public/static/ffmpeg/ffmpeg.exe",
+                'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe",
+                'timeout'          => 600
+            ]);
+        }else if(strstr($system,"Linux")){
+            echo "Linux 环境，暂未开发",PHP_EOL;
+            die();
+        }else {
+            echo "其他 环境，暂未开发",PHP_EOL;
+            die();
+        }
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries'  => root_path() . "public/static/ffmpeg/ffmpeg.exe",
             'ffprobe.binaries' => root_path() . "public/static/ffmpeg/ffprobe.exe",
@@ -58,6 +73,7 @@ class PushVideo
             }
         });
         $video->save($pushVideo, $pushPath);
+        echo "播放 ".$fileInfo[count($fileInfo)-1]." 结束";
         return true;
     }
 }
