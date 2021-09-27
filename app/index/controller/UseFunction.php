@@ -18,6 +18,9 @@ use think\facade\Queue;
 class UseFunction extends Base
 {
     protected function initialize() {
+        bind("Permission",Permission::class);
+        bind("Playlist",Playlist::class);
+        bind("ValidateUser",ValidateUser::class);
         $this->userId = JWTAuth::auth()["user_id"]->getValue();
     }
     /**
@@ -43,7 +46,7 @@ class UseFunction extends Base
         }
         $ruleName = str_replace(" ","",$ruleName);
         $user_id = str_replace(" ","",$user_id);
-        $result = json_decode((new ValidateUser())->validateUserPermission($ruleName,$user_id)->getContent(),true);
+        $result = json_decode(app("ValidateUser")->validateUserPermission($ruleName,$user_id)->getContent(),true);
         if ($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -111,8 +114,7 @@ class UseFunction extends Base
             }
         }
         if(is_file($path)) {
-            $release = new Playlist();
-            $releaseTaskResult = json_decode($release->addVideoToPlaylist($path,$this->userId)->getContent(),true);
+            $releaseTaskResult = json_decode(app("Playlist")->addVideoToPlaylist($path,$this->userId)->getContent(),true);
             if($releaseTaskResult["data"]) {
                 Log::info("user_id:".$user_id." 点播 video_id:".$video_id);
                 return returnAjax(200,"点播完成，等待播放吧",true);
@@ -130,8 +132,7 @@ class UseFunction extends Base
      * 发布当播放列表为空时自动添加一个视频的任务
      */
     public function RandomAddVideoToPlaylist() {
-        $Playlist = new Playlist();
-        $result = json_decode($Playlist->RandomAddVideoToPlaylist()->getContent(),true);
+        $result = json_decode(app("Playlist")->RandomAddVideoToPlaylist()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -148,7 +149,7 @@ class UseFunction extends Base
      * @return \type
      */
     public function editPermissionToGroup() {
-        $result = json_decode((new Permission())->editPermissionToGroup()->getContent(),true);
+        $result = json_decode(app("Permission")->editPermissionToGroup()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {
@@ -167,7 +168,7 @@ class UseFunction extends Base
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function getPermissionListOnUser() {
-        $result = json_decode((new Permission())->getPermissionListOnUser()->getContent(),true);
+        $result = json_decode(app("Permission")->getPermissionListOnUser()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],$result["data"]);
         }else {
@@ -182,7 +183,7 @@ class UseFunction extends Base
      * @return \type
      */
     public function getPermissionListOnGroup() {
-        $result = json_decode((new Permission())->getPermissionListOnGroup()->getContent(),true);
+        $result = json_decode(app("Permission")->getPermissionListOnGroup()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],$result["data"]);
         }else {
@@ -197,7 +198,7 @@ class UseFunction extends Base
      * @return \type
      */
     public function getGroupInfoOnUser() {
-        $result = json_decode((new Permission())->getGroupInfoOnUser()->getContent(),true);
+        $result = json_decode(app("Permission")->getGroupInfoOnUser()->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],$result["data"]);
         }else {
@@ -213,7 +214,7 @@ class UseFunction extends Base
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function getPermissionList() {
-        $result = json_decode((new Permission())->getPermissionList()->getContent(),true);
+        $result = json_decode(app("Permission")->getPermissionList()->getContent(),true);
         return returnAjax(200,$result["msg"],$result["data"]);
     }
 }

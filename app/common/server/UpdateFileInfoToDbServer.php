@@ -3,9 +3,7 @@
 
 namespace app\common\server;
 use app\common\controller\Base;
-use app\common\model\JobsModel;
 use app\common\model\MusicFileListModel;
-use app\common\model\UserModel;
 use app\common\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
