@@ -39,6 +39,13 @@ class RandomAddVideoToPlaylist extends Base
                 }
                 if(json_decode((new Playlist()) -> addVideoToPlaylist($fileFullName,0)->getContent(),true)["data"]) {
                     echo "播放列表内数量过少，将自动播放 【".$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"]."】",PHP_EOL;
+                    sleep(1);
+                }else {
+                    if("" == $fileList[$index]["video_author"]) {
+                        echo "添加 【".$fileList[$index]["video_name"]."】失败",PHP_EOL;
+                    }else {
+                        echo "添加 【".$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"]."】失败",PHP_EOL;
+                    }
                 }
             }
         }else {
@@ -57,7 +64,7 @@ class RandomAddVideoToPlaylist extends Base
                         ->where("is_delete", 0)
                         ->data(["is_delete" => 1, "update_time" => date("Y-m-d ,H:i:s", time()), "delete_time" => date("Y-m-d ,H:i:s", time())])
                         ->update();
-                    Log::info($filePath . " 添加到即将播放列表成功");
+                    Log::info($filePath . " 添加到推流任务成功");
                     echo "将 ".$filePath->file_name." 添加到推流任务成功";
                 } else {
                     echo "出现异常 没有将 ".$filePath." 添加到推流任务";

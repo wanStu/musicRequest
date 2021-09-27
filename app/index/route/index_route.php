@@ -5,6 +5,7 @@ use think\facade\Route;
 
 
 Route::rule("index","/","POST|GET");
+
 //获取信息 无需登录
 Route::group("getInfo",function () {
     //getInfo
@@ -12,7 +13,6 @@ Route::group("getInfo",function () {
     Route::rule("getFileList","GetInfo/getFileList","POST|GET");
     //获取播放列表
     Route::rule("getPlaylist","GetInfo/getPlaylist","POST|GET");
-
 });
 
 //操作 需要登陆

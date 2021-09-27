@@ -40,11 +40,11 @@ class PushVideo
                 'timeout'          => 600
             ]);
         }else if(strstr($system,"Linux")){
-            echo "Linux 环境，暂未开发",PHP_EOL;
-            die();
+            echo "Linux 环境",PHP_EOL;
+            die("暂未开发");
         }else {
-            echo "其他 环境，暂未开发",PHP_EOL;
-            die();
+            echo "其他 环境",PHP_EOL;
+            die("暂未开发");
         }
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries'  => root_path() . "public/static/ffmpeg/ffmpeg.exe",
@@ -55,6 +55,7 @@ class PushVideo
         $pushPath = $server["server_path"].$server["server_key"];
         $fileInfo = explode("/",$videoUrl);
         $video = $ffmpeg->open($videoUrl);
+        //  参数
         $pushVideo = new X264();
         $pushVideo->setKiloBitrate(0)
             ->setInitialParameters(["-re"])
@@ -64,7 +65,6 @@ class PushVideo
         if($job->attempts() > 3) {
             $job->delete();
         }
-        //  输出参数
         $pushVideo->on('progress', function ($audio, $format, $percentage) {
             static $percentageCopy = 0;
             if($percentage != $percentageCopy) {
@@ -73,7 +73,7 @@ class PushVideo
             }
         });
         $video->save($pushVideo, $pushPath);
-        echo "播放 ".$fileInfo[count($fileInfo)-1]." 结束";
+        echo "播放 ".$fileInfo[count($fileInfo)-1]." 结束",PHP_EOL;
         return true;
     }
 }

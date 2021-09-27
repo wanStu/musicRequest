@@ -5,6 +5,7 @@ namespace app\index\controller;
 
 
 use app\common\controller\Base;
+use app\common\model\JobsModel;
 use app\common\model\PlaylistModel;
 use app\common\model\VideoFileListModel;
 use app\common\server\Permission;
@@ -59,6 +60,10 @@ class UseFunction extends Base
      * 开始直播，将播放列表最早的文件加入到推流任务
      */
     public function liveStart() {
+        $releaseLiveTaskCount = JobsModel::where("queue","PushVideo")->count();
+        if($releaseLiveTaskCount) {
+            return returnAjax(100,"已经有任务在等待执行",false);
+        }
         $filePath = PlaylistModel::where("is_delete",0)->order("create_time","ASC")->find();
         $jobClassName  = 'app\common\job\PushVideo';
         $jobQueueName = "PushVideo";
