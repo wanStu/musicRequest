@@ -6,7 +6,6 @@ namespace app\common\server;
 
 use app\common\Base;
 use app\common\model\MusicFileListModel;
-use app\common\model\UserModel;
 use app\common\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;

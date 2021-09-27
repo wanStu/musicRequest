@@ -1,12 +1,16 @@
 <?php
 
 
-namespace app\index\job;
+namespace app\common\job;
 
 
+use app\common\model\JobsModel;
 use app\common\model\LiveServerModel;
+use app\common\model\PlaylistModel;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
+use think\facade\Queue;
+use think\Log;
 use think\queue\Job;
 
 class PushVideo
@@ -37,7 +41,6 @@ class PushVideo
         $fileInfo = explode("/",$videoUrl);
         $video = $ffmpeg->open($videoUrl);
         $pushVideo = new X264();
-//        $pushVideo->setKiloBitrate(0)->setAdditionalParameters(["-c","copy","-f","flv"]);
         $pushVideo->setKiloBitrate(0)
             ->setInitialParameters(["-re"])
             ->setAudioKiloBitrate(192)
@@ -47,7 +50,6 @@ class PushVideo
             $job->delete();
         }
         //  输出参数
-//        dump($video->getFinalCommand($pushVideo,$pushPath));
         $pushVideo->on('progress', function ($audio, $format, $percentage) {
             static $percentageCopy = 0;
             if($percentage != $percentageCopy) {

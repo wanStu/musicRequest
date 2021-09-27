@@ -2,7 +2,7 @@
 
 
 namespace app\common\server;
-use app\common\Base;
+use app\common\controller\Base;
 use app\common\model\JobsModel;
 use app\common\model\MusicFileListModel;
 use app\common\model\UserModel;

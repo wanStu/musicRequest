@@ -6,8 +6,8 @@ namespace app\common\model;
 
 use think\Model;
 
-class PlayListModel extends Model
+class PlaylistModel extends Model
 {
-    protected $table = "play_list";
+    protected $table = "playlist";
     protected $pk = "list_id";
 }

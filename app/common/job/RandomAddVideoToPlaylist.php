@@ -1,0 +1,72 @@
+<?php
+
+
+namespace app\common\job;
+
+use app\common\controller\Base;
+use app\common\model\JobsModel;
+use app\common\model\PlaylistModel;
+use app\common\server\Playlist;
+use app\common\server\GetDataInDbServer;
+use think\facade\Queue;
+use think\Log;
+use think\queue\Job;
+
+class RandomAddVideoToPlaylist extends Base
+{
+
+    /**
+     * @param Job $job
+     * @param $data
+     * @return string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function fire(Job $job,$data) {
+        $this->RandomAddVideoToPlaylist();
+    }
+    public function RandomAddVideoToPlaylist() {
+        $playlistCount = PlaylistModel::where("is_delete",0)->count();
+        if($playlistCount < 2) {
+            for ($i = $playlistCount;$i < 2;$i++) {
+                $fileList = json_decode((new GetDataInDbServer)->getFileListInDb("video")->getContent(),true)["msg"];
+                $index = rand(0,count($fileList)-1);
+                if("" == $fileList[$index]["video_author"]) {
+                    $fileFullName = public_path().$fileList[$index]["video_dir"].$fileList[$index]["video_name"];
+                }else {
+                    $fileFullName = public_path().$fileList[$index]["video_dir"].$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"];
+                }
+                if(json_decode((new Playlist()) -> addVideoToPlaylist($fileFullName,0)->getContent(),true)["data"]) {
+                    echo "播放列表内数量过少，将自动播放 【".$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"]."】",PHP_EOL;
+                }
+            }
+        }else {
+            echo "添加播放列表正常运行".PHP_EOL;
+            sleep(1);
+        }
+        $releaseLiveTaskCount = JobsModel::where("queue","PushVideo")->count();
+        if($releaseLiveTaskCount < 1) {
+            $filePath = PlaylistModel::where("is_delete",0)->order("create_time","ASC")->find();
+            $jobClassName  = 'app\common\job\PushVideo';
+            $jobQueueName = "PushVideo";
+            if($filePath) {
+                $addSuccess = Queue::push($jobClassName, $filePath->file_path, $jobQueueName);
+                if ($addSuccess) {
+                    PlaylistModel::where("file_path", $filePath->file_path)
+                        ->where("is_delete", 0)
+                        ->data(["is_delete" => 1, "update_time" => date("Y-m-d ,H:i:s", time()), "delete_time" => date("Y-m-d ,H:i:s", time())])
+                        ->update();
+                    Log::info($filePath . " 添加到即将播放列表成功");
+                    echo "将 ".$filePath->file_name." 添加到推流任务成功";
+                } else {
+                    echo "出现异常 没有将 ".$filePath." 添加到推流任务";
+                }
+            }else {
+                echo "播放列表为空".PHP_EOL;
+            }
+        }else {
+            echo "发布推流任务正常运行".PHP_EOL;
+        }
+    }
+}

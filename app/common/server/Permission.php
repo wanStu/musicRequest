@@ -2,7 +2,7 @@
 
 
 namespace app\common\server;
-use app\common\Base;
+use app\common\controller\Base;
 use app\common\model\AuthGroupAccessModel;
 use app\common\model\AuthGroupModel;
 use app\common\model\AuthRuleModel;
@@ -77,7 +77,7 @@ class Permission extends Base
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getPermissionListOnGroup($groupId) {
+    public function getPermissionListOnGroup() {
         //获取用户组id
         if(!empty($this->requestData["group_id"]) && is_numeric($this->requestData["group_id"])) {
             $groupInfo = AuthGroupModel::where("id","=",$this->requestData["group_id"])->find();
@@ -114,6 +114,8 @@ class Permission extends Base
     }
     /**
      * 获取 用户权限列表
+     * @param Request
+     *  user_id 用户id
      * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -134,7 +136,6 @@ class Permission extends Base
         if(!count($groupId)) {
             return returnAjax(200,"没有分配用户组",true);
         }
-
         //获取 对应用户组 的权限规则
         $rules = [];
         foreach ($groupId as $key => $value) {
@@ -162,13 +163,16 @@ class Permission extends Base
         }
 //        排序
         array_multisort($temp["data"]["has"]);
+        $temp["data"]["groupList"] = $groupId;
         return returnAjax($temp["status"],$temp["msg"],$temp["data"]);
     }
 
     /**
-     * 获取 用户的用户组列表
+     * 单独获取 用户的用户组列表
+     * @param Request
+     *  user_id 用户id
      */
-    public function getGroupOnfoOnUser() {
+    public function getGroupInfoOnUser() {
         //获取用户id
         if(!empty($this->requestData["user_id"]) && is_numeric($this->requestData["user_id"])) {
             $UserInfo = UserModel::where("user_id","=",$this->requestData["user_id"])->find();

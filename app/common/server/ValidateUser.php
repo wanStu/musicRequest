@@ -4,7 +4,7 @@
 namespace app\common\server;
 
 
-use app\common\Base;
+use app\common\controller\Base;
 use app\common\model\AuthRuleModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
