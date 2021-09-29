@@ -5,7 +5,7 @@ use think\facade\Route;
 
 
 Route::rule("index","/","POST|GET");
-
+Route::rule("userLogin","UserLogin/index","POST|GET");
 //获取信息 无需登录
 Route::group("getInfo",function () {
     //getInfo
@@ -14,6 +14,16 @@ Route::group("getInfo",function () {
     //获取播放列表
     Route::rule("getPlaylist","GetInfo/getPlaylist","POST|GET");
 });
+
+
+//获取信息 需要登录
+Route::group("getInfo",function () {
+    //getInfo
+    //获取用户信息
+    Route::rule("getUserInfo","GetInfo/getUserInfo","POST|GET");
+    //获取用户分数详情
+    Route::rule("getUserScoreInfo","GetInfo/getUserScoreInfo","POST|GET");
+})->middleware(LoginCheck::class);
 
 //操作 需要登陆
 Route::group("useFunction",function (){

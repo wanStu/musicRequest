@@ -6,7 +6,7 @@ use app\common\controller\Base;
 use app\common\model\AuthGroupAccessModel;
 use app\common\model\AuthGroupModel;
 use app\common\model\AuthRuleModel;
-use app\common\model\UserModel;
+use app\common\model\UserScoreModel;
 use app\Request;
 
 class Permission extends Base
@@ -124,7 +124,7 @@ class Permission extends Base
     public function getPermissionListOnUser() {
         //获取用户id
         if(!empty($this->requestData["user_id"]) && is_numeric($this->requestData["user_id"])) {
-            $UserInfo = UserModel::where("user_id","=",$this->requestData["user_id"])->find();
+            $UserInfo = UserScoreModel::where("user_id","=",$this->requestData["user_id"])->find();
             if(!$UserInfo) {
                 return returnAjax(100,"参数错误：用户id不存在",false);
             }
@@ -175,7 +175,7 @@ class Permission extends Base
     public function getGroupInfoOnUser() {
         //获取用户id
         if(!empty($this->requestData["user_id"]) && is_numeric($this->requestData["user_id"])) {
-            $UserInfo = UserModel::where("user_id","=",$this->requestData["user_id"])->find();
+            $UserInfo = UserScoreModel::where("user_id","=",$this->requestData["user_id"])->find();
             if(!$UserInfo) {
                 return returnAjax(100,"参数错误：用户id不存在",false);
             }

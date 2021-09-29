@@ -11,14 +11,7 @@ class Index
      */
     public function index()
     {
-        $system = php_uname();
-        echo $system,PHP_EOL;
-        if(strstr($system,"Windows")) {
-        }else if(strstr($system,"Linux")){
-            echo "Linux 环境，暂未开发",PHP_EOL;
-        }else {
-            echo "其他 环境，暂未开发",PHP_EOL;
-        }
+        (new \app\common\model\UserScoreModel)->where("user_id",55)->find()->save(["dsasadsa" => 1,"user_name" => "222","user_pwd" => 1,"sadsaasd" => 1]);
         return returnAjax(200,app()->getRootPath(),true);
     }
 }

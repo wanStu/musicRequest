@@ -4,12 +4,13 @@
 namespace app\common\server;
 
 
-use app\common\Base;
 use app\common\model\MusicFileListModel;
+use app\common\model\UserModel;
 use app\common\model\VideoFileListModel;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\facade\Db;
 
 /**
  * 从数据库中获取数据
@@ -51,6 +52,47 @@ class GetDataInDbServer
             }
         }
 
+    }
+
+    /**
+     * 获取用户信息
+     * @param $user_id
+     * @return \type
+     */
+    public function getUserInfo($user_id) {
+        $userInfoWhere = [];
+        if(!empty($user_id)) {
+            $userInfoWhere[] = ["user.user_id","=",$user_id];
+        }else {
+            return returnAjax(100,"参数错误：user_id",false);
+        }
+        $userInfo =UserModel::join("user_score","user.user_id = user_score.user_id")
+            ->join("score_source","user_score.source_id = score_source.source_id")
+            ->where($userInfoWhere)
+            ->group("user.user_id")
+            ->field("user_name,SUM(score) as score")
+            ->find();
+        return returnAjax(200,"获取成功",$userInfo);
+    }
+
+    /**
+     * 获取用户分数详情
+     * @param $user_id
+     * @return \type
+     */
+    public function getUserScoreInfo($user_id) {
+        $userScoreInfoWhere = [];
+        if(!empty($user_id)) {
+            $userScoreInfoWhere[] = ["user.user_id","=",$user_id];
+        }else {
+            return returnAjax(100,"参数错误：user_id",false);
+        }
+        $userInfo =UserModel::join("user_score","user.user_id = user_score.user_id")
+            ->join("score_source","user_score.source_id = score_source.source_id")
+            ->where($userScoreInfoWhere)
+            ->field("user_name,source_name,score,user_score.create_date")
+            ->select();
+        return returnAjax(200,"获取成功",$userInfo);
     }
 
 }

@@ -4,13 +4,9 @@
 namespace app\common\job;
 
 
-use app\common\model\JobsModel;
 use app\common\model\LiveServerModel;
-use app\common\model\PlaylistModel;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
-use think\facade\Queue;
-use think\Log;
 use think\queue\Job;
 
 class PushVideo

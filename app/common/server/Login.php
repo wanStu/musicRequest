@@ -4,7 +4,7 @@
 namespace app\common\server;
 
 use app\BaseController;
-use app\common\model\UserModel;
+use app\common\model\UserScoreModel;
 use thans\jwt\facade\JWTAuth;
 use think\exception\ValidateException;
 
@@ -30,12 +30,12 @@ class Login extends BaseController
         } catch (ValidateException $e){
             return returnAjax(100,$e->getError(),false);
         }
-        if(!(UserModel::where("user_name",$this->requestData["user_name"])->count())) {
+        if(!(UserScoreModel::where("user_name",$this->requestData["user_name"])->count())) {
             return returnAjax(100,"用户名或密码错误",false);
         }else {
             $password = hash("sha256",config("app.password_key").md5($this->requestData["user_pwd"]));
         }
-        if($userId = UserModel::where("user_name",$this->requestData["user_name"])->where("user_pwd",$password)->field("user_id")->find()) {
+        if($userId = UserScoreModel::where("user_name",$this->requestData["user_name"])->where("user_pwd",$password)->field("user_id")->find()) {
             $userId = $userId->toArray();
         }
         if(!$userId) {
