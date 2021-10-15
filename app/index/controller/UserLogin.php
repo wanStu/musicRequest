@@ -2,7 +2,7 @@
 
 
 namespace app\index\controller;
-use app\common\server\Login;
+use app\common\service\Login;
 
 class UserLogin
 {

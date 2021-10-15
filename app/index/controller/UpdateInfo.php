@@ -4,7 +4,7 @@
 namespace app\index\controller;
 
 use app\common\controller\Base;
-use app\common\server\UpdateFileInfoToDbServer;
+use app\common\service\UpdateFileInfoToDbServer;
 use thans\jwt\facade\JWTAuth;
 use think\Request;
 

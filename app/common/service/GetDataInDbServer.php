@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\common\server;
+namespace app\common\service;
 
 
 use app\common\model\MusicFileListModel;

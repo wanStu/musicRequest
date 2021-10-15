@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\common\server;
+namespace app\common\service;
 
 use app\BaseController;
 use app\common\model\UserModel;

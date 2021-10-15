@@ -6,7 +6,7 @@ namespace app\index\controller;
 
 use app\common\controller\Base;
 use app\common\model\PlaylistModel;
-use app\common\server\GetDataInDbServer;
+use app\common\service\GetDataInDbServer;
 use thans\jwt\facade\JWTAuth;
 
 class GetInfo extends Base
