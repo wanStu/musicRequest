@@ -11,6 +11,7 @@ Route::group("getInfo",function () {
     //getInfo
     //获取文件列表
     Route::rule("getFileList","GetInfo/getFileList","POST|GET");
+    Route::rule("getObjectList","GetInfo/getObjectList","POST|GET");
     //获取播放列表
     Route::rule("getPlaylist","GetInfo/getPlaylist","POST|GET");
 });
@@ -53,4 +54,6 @@ Route::group("useFunction",function (){
     Route::rule("getPermissionListOnGroup","UseFunction/getPermissionListOnGroup","POST|GET");
     //单独获取 权限列表
     Route::rule("getPermissionList","UseFunction/getPermissionList","POST|GET");
+
+    Route::rule("getObjectTest","UseFunction/getObjectTest","POST|GET");
 })->middleware(LoginCheck::class);

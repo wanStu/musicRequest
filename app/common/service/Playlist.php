@@ -15,7 +15,8 @@ class Playlist extends Base
      */
     public function addVideoToPlaylist($filePath,$userId)
     {
-        $fileName = explode("/",$filePath)[3];
+        $fileNameArr = explode("/",$filePath);
+        $fileName = end($fileNameArr);
         $result = PlayListModel::where("is_delete",0)->where("file_path",$filePath)->find();
         if(!$result) {
             $pushSuccess = PlayListModel::create(["file_name" => $fileName,"file_path" => $filePath,"user_id" => $userId]);

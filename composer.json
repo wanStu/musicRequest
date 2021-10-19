@@ -30,7 +30,8 @@
         "wenhainan/thinkphp6-auth": "^1.0",
         "php-ffmpeg/php-ffmpeg": "^0.18.0",
         "topthink/think-multi-app": "^1.0",
-        "thans/tp-jwt-auth": "^1.1"
+        "thans/tp-jwt-auth": "^1.1",
+        "aws/aws-sdk-php": "^3.198"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",

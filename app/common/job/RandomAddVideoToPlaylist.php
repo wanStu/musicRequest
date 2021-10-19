@@ -6,6 +6,7 @@ namespace app\common\job;
 use app\common\controller\Base;
 use app\common\model\JobsModel;
 use app\common\model\PlaylistModel;
+use app\common\model\VideoFileListModel;
 use app\common\service\Playlist;
 use app\common\service\GetDataInDbServer;
 use think\facade\Queue;
@@ -31,13 +32,14 @@ class RandomAddVideoToPlaylist extends Base
         if($playlistCount < 2) {
             for ($i = $playlistCount;$i < 2;$i++) {
                 $fileList = json_decode((new GetDataInDbServer)->getFileListInDb("video")->getContent(),true)["msg"];
-                $index = rand(0,count($fileList)-1);
-                if("" == $fileList[$index]["video_author"]) {
-                    $fileFullName = public_path().$fileList[$index]["video_dir"].$fileList[$index]["video_name"];
-                }else {
-                    $fileFullName = public_path().$fileList[$index]["video_dir"].$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"];
+                if(0 == count($fileList)) {
+                    echo "文件列表为空".PHP_EOL;
+                    die();
                 }
-                if(json_decode((new Playlist()) -> addVideoToPlaylist($fileFullName,0)->getContent(),true)["data"]) {
+                $index = rand(0,count($fileList)-1);
+                $fileInfo = VideoFileListModel::where("video_status",1)->find($index);
+                $filePath = $fileInfo["video_dir"].(("" == $fileInfo["video_author"])? "" :($fileInfo["video_author"]." - ")).$fileInfo["video_name"];
+                if(json_decode((new Playlist()) -> addVideoToPlaylist($filePath,0)->getContent(),true)["data"]) {
                     echo "播放列表内数量过少，将自动播放 【".$fileList[$index]["video_author"]." - ".$fileList[$index]["video_name"]."】",PHP_EOL;
                     sleep(1);
                 }else {

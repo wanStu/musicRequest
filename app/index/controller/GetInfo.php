@@ -7,6 +7,7 @@ namespace app\index\controller;
 use app\common\controller\Base;
 use app\common\model\PlaylistModel;
 use app\common\service\GetDataInDbServer;
+use app\common\service\GetDataInMinIO;
 use thans\jwt\facade\JWTAuth;
 
 class GetInfo extends Base
@@ -38,7 +39,24 @@ class GetInfo extends Base
             return returnAjax(100,$result["msg"],false);
         }
     }
-
+    /**
+     * 获取MinIO中的音乐/视频列表
+     * @param Request
+     *  type 类型
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function getObjectList()
+    {
+        if(!empty($this->requestData["type"])) {
+            $type = $this->requestData["type"];
+        }else {
+            return returnAjax(100,"类型不能为空",false);
+        }
+        $result = json_decode((new GetDataInMinIO())->getObjectList($type)->getContent(),true);
+        return returnAjax(200,"获取成功",$result);
+    }
     /**
      * 获取播放列表
      */

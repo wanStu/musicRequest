@@ -89,51 +89,41 @@ class UpdateFileInfoToDbServer extends Base
             "success"   => [],
             "info" => []
         ];
-//        当得到的列表为空时自动获取对应类型的本地文件列表
         if (([] == $fileList )) {
-            $fileList = json_decode($this -> getFileListInlocal($type,$dir)->getContent(),true)["msg"];
+            $fileList = json_decode((new GetDataInMinIO())->getObjectList($type)->getContent(),true)["data"];
         }
-        foreach ($fileList as $key => $item) {
-            if(is_dir(app()->getRootPath()."public/static/".$type."File/".$key)) {
-                $msg = array_merge_recursive($msg,json_decode($this -> updateFileListToDb($type,[],app()->getRootPath()."public/static/".$type."File/".$key."/")->getContent(),true)["msg"]);
-                continue;
+        foreach ($fileList as $item) {
+            $fileDir = !empty(explode("/",$item,-1))?"/".implode("/",explode("/",$item,-1)):"/";
+            $filePath = explode("/",$item);
+            $fileAuthor = "";
+            $fileFullName = end($filePath);
+            $fileName = $fileFullName;
+            if(strstr($fileFullName,"-")) {
+                $fileAuthor = strstr($fileFullName,"-",true);
+                $fileName = strstr($fileFullName,"-");
             }
-            $fileInfo = explode("-",$item,2);
-            $fileInfo[] = "/static/".$type."File/{$dir}";
-            if(strpos($item,"-")) {
-                $data[$type."_author"] = trim($fileInfo[0]);
-                $data[$type."_name"] = trim($fileInfo[1]);
-                $data[$type."_dir"] = $fileInfo[2];
-            }else {
-                $data[$type."_author"] ="";
-                $data[$type."_name"] = trim($fileInfo[0]);
-                $data[$type."_dir"] = $fileInfo[1];
-            }
-            $fileInfoTable = new class {};
-            if("music" == $type) {
+            $data[$type."_author"] = trim($fileAuthor);
+            $data[$type."_name"] = trim($fileName,"- ");
+            $data[$type."_dir"] = $fileDir;
+            if("audio" == $type) {
                 $fileInfoTable = new MusicFileListModel();
             }else if("video" == $type) {
                 $fileInfoTable = new VideoFileListModel();
             }
-            if(!$fileInfoTable->where($type."_name",$data[$type."_name"])->where($type."_author",$data[$type."_author"])->find()) {
-                if(!$fileInfoTable::create($data)) {
-                    if($data[$type."_author"] != "") {
-                        $msg["error"][] = $data[$type."_author"] . " - " . $data[$type."_name"] . "添加失败";
-                    }else {
-                        $msg["error"][] = "未知 - " . $data[$type."_name"] . "添加失败";
-                    }
+
+            if(!$videoInfo = $fileInfoTable->where($type."_name",$data[$type."_name"])->where($type."_author",$data[$type."_author"])->find()) {
+                if(!$fileInfoTable->save($data)) {
+                    $msg["error"][] = $fileFullName . "添加失败";
                 }else {
-                    if($data[$type."_author"] != "") {
-                        $msg["success"][] = $data[$type."_author"] . " - " . $data[$type."_name"] . " 添加成功";
-                    }else {
-                        $msg["success"][] = "未知 - " . $data[$type."_name"] . " 添加成功";
-                    }
+                    $msg["success"][] = $fileFullName . " 添加成功";
                 }
             }else {
-                if($data[$type."_author"] != "") {
-                    $msg["info"][] = $data[$type."_author"]." - ".$data[$type."_name"]." 已存在";
+                if($videoInfo["video_status"] == -1) {
+                    $msg["success"][] = $fileFullName . " 为禁用状态";
+                }else if(!$videoInfo->save($data)) {
+                    $msg["error"][] = $fileFullName . "更新失败";
                 }else {
-                    $msg["info"][] = "未知 - ".$data[$type."_name"]." 已存在";
+                    $msg["success"][] = $fileFullName . " 更新成功";
                 }
             }
         }
@@ -160,13 +150,14 @@ class UpdateFileInfoToDbServer extends Base
             return returnAjax(100,"类型错误",false);
         }
         $fileList = $fileInfoTable->where($type."_status","<>",-1)->select();
+        $MinioFileList = json_decode((new GetDataInMinIO())->getObjectList($type)->getContent(),true)["data"];
         foreach ($fileList as $item) {
-            if($item[$type."_author"] == "") {
-                $fullFileName = $item[$type."_dir"].$item[$type."_author"].$item[$type."_name"];
+            if($item[$type."_author"] === "") {
+                $fullFileName = (("/" === $item[$type."_dir"])?"" : trim($item[$type."_dir"],"/")."/").$item[$type."_name"];
             }else {
-                $fullFileName = $item[$type."_dir"].$item[$type."_author"]." - ".$item[$type."_name"];
+                $fullFileName = (("/" === $item[$type."_dir"])?"" : trim($item[$type."_dir"],"/")."/").$item[$type."_author"]." - ".$item[$type."_name"];
             }
-            if(file_exists(app()->getRootPath()."public". $fullFileName)) {
+            if(in_array($fullFileName,$MinioFileList)) {
                 $fileInfoTable::update([$type."_status" => 1],[$type."_id" => $item[$type."_id"]]);
                 $msg["find"][] =  "【".$fullFileName."】"." 可以找到，状态修改为 1 ";
             } else {

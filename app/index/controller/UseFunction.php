@@ -6,12 +6,16 @@ namespace app\index\controller;
 
 use app\common\controller\Base;
 use app\common\model\JobsModel;
+use app\common\model\LiveServerModel;
 use app\common\model\PlaylistModel;
 use app\common\model\VideoFileListModel;
+use app\common\service\GetDataInMinIO;
 use app\common\service\Permission;
 use app\common\service\Playlist;
 use app\common\service\ValidateUser;
 use app\Request;
+use FFMpeg\FFMpeg;
+use FFMpeg\Format\Video\X264;
 use thans\jwt\facade\JWTAuth;
 use think\facade\Log;
 use think\facade\Queue;
@@ -108,18 +112,14 @@ class UseFunction extends Base
             return returnAjax(100,$result["msg"],false);
         }
 
-        if(!$videoInfo = VideoFileListModel::where("video_id","=",$video_id)->where("video_status","=","1")->find()) {
+        if(!$videoInfo = VideoFileListModel::where("video_status",1)->find($video_id)) {
             return returnAjax(100,"您选择的视频异常",["video_id" => $video_id]);
         }else {
-            $videoInfo = $videoInfo->toArray();
-            if($videoInfo["video_author"]) {
-                $path = root_path()."public".$videoInfo["video_dir"].$videoInfo["video_author"]." - ".$videoInfo["video_name"];
-            }else {
-                $path = root_path()."public".$videoInfo["video_dir"].$videoInfo["video_name"];
-            }
+            $filePath = $videoInfo["video_dir"].(!$videoInfo["video_author"]? "" :$videoInfo["video_author"]." - ").$videoInfo["video_name"];
         }
-        if(is_file($path)) {
-            $releaseTaskResult = json_decode(app("Playlist")->addVideoToPlaylist($path,$this->userId)->getContent(),true);
+        $fileURL = (new GetDataInMinIO())->getObject($filePath);
+        if($fileURL) {
+            $releaseTaskResult = json_decode(app("Playlist")->addVideoToPlaylist($filePath,$this->userId)->getContent(),true);
             if($releaseTaskResult["data"]) {
                 Log::info("user_id:".$user_id." 点播 video_id:".$video_id);
                 return returnAjax(200,"点播完成，等待播放吧",true);
@@ -127,7 +127,7 @@ class UseFunction extends Base
                 return returnAjax(100,$releaseTaskResult["msg"],false);
             }
         }else {
-            Log::error($path."视频异常");
+            Log::error($filePath."视频异常");
             return returnAjax(100,"您选择的视频异常",["video_id" => $video_id]);
         }
     }
@@ -221,5 +221,40 @@ class UseFunction extends Base
     public function getPermissionList() {
         $result = json_decode(app("Permission")->getPermissionList()->getContent(),true);
         return returnAjax(200,$result["msg"],$result["data"]);
+    }
+
+    public function getObjectTest() {
+        if(empty($this->requestData["video_id"])) {
+            return returnAjax(100,"视频ID不能为空",false);
+        }
+        $server = LiveServerModel::find(1);
+        $fileInfo = VideoFileListModel::where("video_status",1)->find($this->requestData["video_id"]);
+        if(!$fileInfo) {
+            return returnAjax(100,"视频异常",false);
+        }
+        $filePath = $fileInfo["video_dir"].(("" == $fileInfo["video_author"])? "" :($fileInfo["video_author"]." - ")).$fileInfo["video_name"];
+        $pushPath = $server["server_path"].$server["server_key"];
+        $fileFullUrl = (new GetDataInMinIO())->getObject($filePath);
+        $fileUrl = "http://172.17.0.3:9000".strstr($fileFullUrl,"/v");
+        $ffmpeg = FFMpeg::create([
+            'ffmpeg.binaries'  => "ffmpeg",
+            'ffprobe.binaries' => "ffprobe",
+            'timeout'          => 600
+        ]);
+        $video = $ffmpeg->open("$fileUrl");
+        //  参数
+        $pushVideo = new X264();
+        $pushVideo->setKiloBitrate(0)
+            ->setInitialParameters(["-re"])
+            ->setAudioKiloBitrate(192)
+            ->setAdditionalParameters(["-f","flv"]);
+        $pushVideo->on('progress', function ($audio, $format, $percentage) {
+            static $percentageCopy = 0;
+            if($percentage != $percentageCopy) {
+                $percentageCopy = $percentage;
+                echo "进度 {$percentage} % ",PHP_EOL;
+            }
+        });
+        $video->save($pushVideo,$pushPath);
     }
 }
