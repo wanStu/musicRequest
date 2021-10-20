@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 
 return [
-    'default'     => 'database',
+    'default'     => 'redis',
     'connections' => [
         'sync'     => [
             'type' => 'sync',

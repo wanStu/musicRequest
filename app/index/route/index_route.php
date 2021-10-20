@@ -60,5 +60,5 @@ Route::group("useFunction",function (){
     //向 MinIO 中上传文件
     Route::rule("updateObject","UseFunction/updateObject","POST|GET");
     //测试
-    Route::rule("getObjectTest","UseFunction/getObjectTest","POST|GET");
+    Route::rule("Test","UseFunction/Test","POST|GET");
 })->middleware(LoginCheck::class);

@@ -6,7 +6,6 @@ namespace app\index\controller;
 
 use app\common\controller\Base;
 use app\common\model\JobsModel;
-use app\common\model\LiveServerModel;
 use app\common\model\MusicFileListModel;
 use app\common\model\PlaylistModel;
 use app\common\model\VideoFileListModel;
@@ -16,12 +15,10 @@ use app\common\service\Playlist;
 use app\common\service\UpdateDataToMinIO;
 use app\common\service\ValidateUser;
 use app\Request;
-use FFMpeg\FFMpeg;
-use FFMpeg\Format\Video\X264;
 use thans\jwt\facade\JWTAuth;
-use think\facade\Filesystem;
 use think\facade\Log;
 use think\facade\Queue;
+use Redis;
 
 class UseFunction extends Base
 {
@@ -68,7 +65,8 @@ class UseFunction extends Base
      * 开始直播，将播放列表最早的文件加入到推流任务
      */
     public function liveStart() {
-        $releaseLiveTaskCount = JobsModel::where("queue","PushVideo")->count();
+//        $releaseLiveTaskCount = JobsModel::where("queue","PushVideo")->count();
+        $releaseLiveTaskCount = $this->redis->llen("{queues:PushVideo}");
         if($releaseLiveTaskCount) {
             return returnAjax(100,"已经有任务在等待执行",false);
         }
@@ -235,6 +233,15 @@ class UseFunction extends Base
         if(empty($this->requestData["key"])) {
             $this->requestData["key"] = "/";
         }
+//        $data = request()->file("file");
+//        $jobClassName = "app\common\job\UploadToMinio";
+//        $jobQueueName = "UploadToMinioTask";
+//        $jobPushResult = Queue::push($jobClassName,$data,$jobQueueName);
+//        if($jobPushResult) {
+//            return returnAjax(200,"开始上传",true);
+//        }else {
+//            return returnAjax(100,"错误",false);
+//        }
         if(is_array(request()->file("file"))) {
             foreach (request()->file("file") as $value) {
                 $updateObjectResult[] = json_decode(app("UpdateDataToMinIO")->updateObject(fopen($value,"r"),$value->getOriginalName())->getContent(),true)["msg"];
@@ -243,7 +250,7 @@ class UseFunction extends Base
         }else {
             $updateObjectResult = json_decode(app("UpdateDataToMinIO")->updateObject(request()->file("file"),request()->file("file")->getOriginalName())->getContent(),true)["msg"];
         }
-        dump($updateObjectResult);
+        return returnAjax(200,$updateObjectResult,true);
     }
 
     /**
@@ -276,44 +283,9 @@ class UseFunction extends Base
     }
 
     /**
-     * 获取对象 测试方法 无用处
-     * @return \type|void
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 测试方法 无用处
      */
-    public function getObjectTest() {
-        if(empty($this->requestData["video_id"])) {
-            return returnAjax(100,"视频ID不能为空",false);
-        }
-        $server = LiveServerModel::find(1);
-        $fileInfo = VideoFileListModel::where("video_status",1)->find($this->requestData["video_id"]);
-        if(!$fileInfo) {
-            return returnAjax(100,"视频异常",false);
-        }
-        $filePath = $fileInfo["video_dir"].(("" == $fileInfo["video_author"])? "" :($fileInfo["video_author"]." - ")).$fileInfo["video_name"];
-        $pushPath = $server["server_path"].$server["server_key"];
-        $fileFullUrl = (new GetDataInMinIO())->getObject($filePath);
-        $fileUrl = "http://172.17.0.3:9000".strstr($fileFullUrl,"/v");
-        $ffmpeg = FFMpeg::create([
-            'ffmpeg.binaries'  => "ffmpeg",
-            'ffprobe.binaries' => "ffprobe",
-            'timeout'          => 600
-        ]);
-        $video = $ffmpeg->open("$fileUrl");
-        //  参数
-        $pushVideo = new X264();
-        $pushVideo->setKiloBitrate(0)
-            ->setInitialParameters(["-re"])
-            ->setAudioKiloBitrate(192)
-            ->setAdditionalParameters(["-f","flv"]);
-        $pushVideo->on('progress', function ($audio, $format, $percentage) {
-            static $percentageCopy = 0;
-            if($percentage != $percentageCopy) {
-                $percentageCopy = $percentage;
-                echo "进度 {$percentage} % ",PHP_EOL;
-            }
-        });
-        $video->save($pushVideo,$pushPath);
+    public function Test() {
+        dump(config("queue.default"));
     }
 }

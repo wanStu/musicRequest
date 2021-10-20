@@ -10,7 +10,7 @@ use think\facade\Queue;
 class Playlist extends Base
 {
     /**
-     * 发布推流到直播间的的任务
+     * 添加到播放列表
      * @param string $filePath 将被推流的视频路径
      */
     public function addVideoToPlaylist($filePath,$userId)
@@ -39,7 +39,13 @@ class Playlist extends Base
         $jobClassName  = 'app\common\job\RandomAddVideoToPlaylist';
         // 2.当前任务归属的队列名称，如果为新队列，会自动创建
         $jobQueueName = "RandomAddVideoToPlaylistTask";
-        $sum = JobsModel::where("queue","RandomAddVideoToPlaylistTask")->count();
+        if("redis" == config("queue.default")) {
+            $sum = $this->redis->llen("{queues:RandomAddVideoToPlaylistTask}") + $this->redis->llen("{queues:RandomAddVideoToPlaylistTask}:reserved");
+        }else if("database" == config("queue.default")) {
+            $sum = JobsModel::where("queue","RandomAddVideoToPlaylistTask")->count();
+        }else {
+            return returnAjax(100,"任务 {$jobQueueName} 发布失败",false);
+        }
         if($sum > 0) {
             return returnAjax(100,"已经开启",false);
         }

@@ -15,7 +15,7 @@ use think\queue\Job;
 
 class RandomAddVideoToPlaylist extends Base
 {
-
+    protected function initialize() {}
     /**
      * @param Job $job
      * @param $data
@@ -54,7 +54,13 @@ class RandomAddVideoToPlaylist extends Base
             echo "添加播放列表正常运行".PHP_EOL;
             sleep(1);
         }
-        $releaseLiveTaskCount = JobsModel::where("queue","PushVideo")->count();
+        if("redis" == config("queue.default")) {
+            $releaseLiveTaskCount = $this->redis->llen("{queues:PushVideo}") + $this->redis->llen("{queues:PushVideo}:reserved");
+        }else if("database" == config("queue.default")) {
+            $releaseLiveTaskCount = JobsModel::where("queue","PushVideo")->count();
+        }else {
+            $releaseLiveTaskCount = 10;
+        }
         if($releaseLiveTaskCount < 1) {
             $filePath = PlaylistModel::where("is_delete",0)->order("create_time","ASC")->find();
             $jobClassName  = 'app\common\job\PushVideo';
@@ -74,6 +80,8 @@ class RandomAddVideoToPlaylist extends Base
             }else {
                 echo "播放列表为空".PHP_EOL;
             }
+        }else if($releaseLiveTaskCount > 1){
+            echo "发布推流任务异常".PHP_EOL;
         }else {
             echo "发布推流任务正常运行".PHP_EOL;
         }
