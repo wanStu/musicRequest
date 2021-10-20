@@ -11,6 +11,7 @@ use think\Request;
 class UpdateInfo extends Base
 {
     protected function initialize() {
+        bind("UpdateFileInfoToDbServer",UpdateFileInfoToDbServer::class);
         $this->userId = JWTAuth::auth()["user_id"]->getValue();
     }
     /**
@@ -51,12 +52,10 @@ class UpdateInfo extends Base
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function updateFileStatusInDb() {
-        if(!empty($this->requestData["type"])) {
-            $type = $this->requestData["type"];
-        }else {
+        if(empty($this->requestData["type"])) {
             return returnAjax(100,"类型错误",false);
         }
-        $result = json_decode((new UpdateFileInfoToDbServer())->updateFileStatusInDb("{$type}")->getContent(),true);
+        $result = json_decode(app("UpdateFileInfoToDbServer")->updateFileStatusInDb($this->requestData["type"])->getContent(),true);
         if($result["data"]) {
             return returnAjax(200,$result["msg"],true);
         }else {

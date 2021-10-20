@@ -82,7 +82,7 @@ class UpdateFileInfoToDbServer extends Base
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function updateFileListToDb(string $type, array $fileList = [], string $dir = "")
+    public function updateFileListToDb(string $type, array $fileList = [])
     {
         $msg =[
             "error" => [],

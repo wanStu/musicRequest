@@ -7,16 +7,19 @@ namespace app\index\controller;
 use app\common\controller\Base;
 use app\common\model\JobsModel;
 use app\common\model\LiveServerModel;
+use app\common\model\MusicFileListModel;
 use app\common\model\PlaylistModel;
 use app\common\model\VideoFileListModel;
 use app\common\service\GetDataInMinIO;
 use app\common\service\Permission;
 use app\common\service\Playlist;
+use app\common\service\UpdateDataToMinIO;
 use app\common\service\ValidateUser;
 use app\Request;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
 use thans\jwt\facade\JWTAuth;
+use think\facade\Filesystem;
 use think\facade\Log;
 use think\facade\Queue;
 
@@ -26,6 +29,7 @@ class UseFunction extends Base
         bind("Permission",Permission::class);
         bind("Playlist",Playlist::class);
         bind("ValidateUser",ValidateUser::class);
+        bind("UpdateDataToMinIO",UpdateDataToMinIO::class);
         $this->userId = JWTAuth::auth()["user_id"]->getValue();
     }
     /**
@@ -223,6 +227,61 @@ class UseFunction extends Base
         return returnAjax(200,$result["msg"],$result["data"]);
     }
 
+
+    public function updateObject() {
+        if(empty($this->requestData["type"])) {
+            return returnAjax(100,"类型 不能为空",false);
+        }
+        if(empty($this->requestData["key"])) {
+            $this->requestData["key"] = "/";
+        }
+        if(is_array(request()->file("file"))) {
+            foreach (request()->file("file") as $value) {
+                $updateObjectResult[] = json_decode(app("UpdateDataToMinIO")->updateObject(fopen($value,"r"),$value->getOriginalName())->getContent(),true)["msg"];
+            }
+            unset($value);
+        }else {
+            $updateObjectResult = json_decode(app("UpdateDataToMinIO")->updateObject(request()->file("file"),request()->file("file")->getOriginalName())->getContent(),true)["msg"];
+        }
+        dump($updateObjectResult);
+    }
+
+    /**
+     * 删除文件
+     * @param Request
+     * ID 文件 id
+     * @return \type
+     */
+    public function deleteObject() {
+        if(empty($this->requestData["type"])) {
+            return returnAjax(100,"类型 不能为空",false);
+        }
+        $bucket = $this->requestData["type"];
+        if(empty($this->requestData[$bucket."_id"])) {
+            return returnAjax(100,"文件 id 不能为空",false);
+        }
+        if("video" == $this->requestData["type"]) {
+            $db = new VideoFileListModel();
+        }else if("audio" == $this->requestData["type"]) {
+            $db = new MusicFileListModel();
+        }
+        $fileInfo = $db->find($this->requestData[$this->requestData["type"]."_id"]);
+        $path = $fileInfo["video_dir"].($fileInfo["video_author"]?$fileInfo["video_author"]." - ":"").$fileInfo["video_name"];
+        $deleteObjectResult = json_decode(app("UpdateDataToMinIO")->deleteObject($bucket,$path)->getContent(),true);
+        if($deleteObjectResult["data"]) {
+            return returnAjax(200,($fileInfo["video_author"]?$fileInfo["video_author"]." - ":"").$fileInfo["video_name"].$deleteObjectResult["msg"],$deleteObjectResult["data"]);
+        }else {
+            return returnAjax(100,$deleteObjectResult["msg"],$deleteObjectResult["data"]);
+        }
+    }
+
+    /**
+     * 获取对象 测试方法 无用处
+     * @return \type|void
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
     public function getObjectTest() {
         if(empty($this->requestData["video_id"])) {
             return returnAjax(100,"视频ID不能为空",false);

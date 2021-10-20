@@ -33,4 +33,6 @@ return [
     "password_key"     => "#music_request*",
 
     "MinIO_Host"       => "172.17.0.3:9000",
+    "MinIO_User"       => "minioadmin",
+    "MinIO_Pwd"        => "minioadmin",
 ];

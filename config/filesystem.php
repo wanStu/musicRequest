@@ -20,5 +20,10 @@ return [
             'visibility' => 'public',
         ],
         // 更多的磁盘配置信息
+        "media" => [
+            "type"       => "local",
+            "root"       => app()->getRootPath()."public/static/media",
+            'visibility' => 'public',
+        ],
     ],
 ];

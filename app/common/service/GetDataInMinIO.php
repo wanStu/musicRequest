@@ -6,19 +6,23 @@ class GetDataInMinIO
 {
     protected $s3;
     public function __construct() {
-        $minioHost = config("app.MinIO_Host");
         $this->s3 = new S3Client([
             'version' => 'latest',
             'region' => 'cn-north-1',
-            'endpoint'  =>  $minioHost,
+            'endpoint'  =>  config("app.MinIO_Host"),
             'use_path_style_endpoint' => true,
             'credentials' => [
-                'key'    => 'minioadmin',
-                'secret' => 'minioadmin',
+                'key'    => config("app.MinIO_User"),
+                'secret' => config("app.MinIO_Pwd"),
             ]
         ]);
     }
-    protected function getBucketsList() {
+
+    /**
+     * 获取桶列表
+     * @return \type
+     */
+    public function getBucketsList() {
         $bucketsList = [];
         if(!empty($this->s3->ListBuckets()["Buckets"])) {
             $listBuckets = $this->s3->ListBuckets()["Buckets"];
@@ -32,12 +36,17 @@ class GetDataInMinIO
         return returnAjax(200,"获取成功",$bucketsList);
     }
 
-    public function getObjectList($type = "video") {
+    /**
+     * 获取 对象 列表
+     * @param string $Bucket 要获取的桶名 默认 "video"
+     * @return \type
+     */
+    public function getObjectList($Bucket = "video") {
         $bucketsList = json_decode($this->getBucketsList()->getContent(),true)["data"];
-        if(!in_array($type,$bucketsList)) {
+        if(!in_array($Bucket,$bucketsList)) {
             return returnAjax(200,"获取失败，类型错误",false);
         }
-        $listObject = $this->s3->listObjects(['Bucket' => $type]);
+        $listObject = $this->s3->listObjects(['Bucket' => $Bucket]);
         $fileList = [];
         if($listObject["Contents"]) {
             foreach ($listObject["Contents"] as $value) {
@@ -45,11 +54,19 @@ class GetDataInMinIO
             }
             unset($value);
             return returnAjax(200,"获取成功",$fileList["Key"]);
+        }else {
+            return returnAjax(200,"获取成功",[]);
         }
-        return returnAjax(200,"获取成功",[]);
     }
-    public function getObject($path = "/",$type = "video") {
-        $objectUrl = $this->s3->getObjectUrl($type,$path);
+
+    /**
+     * 获取 对象
+     * @param string $path   路径 默认 "/"
+     * @param string $Bucket 要获取的桶名 默认 "video"
+     * @return string
+     */
+    public function getObject($path = "/",$Bucket = "video") {
+        $objectUrl = $this->s3->getObjectUrl($Bucket,$path);
         return $objectUrl;
     }
 }

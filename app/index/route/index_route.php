@@ -55,5 +55,10 @@ Route::group("useFunction",function (){
     //单独获取 权限列表
     Route::rule("getPermissionList","UseFunction/getPermissionList","POST|GET");
 
+    //删除 MinIO中的文件
+    Route::rule("deleteObject","UseFunction/deleteObject","POST|GET");
+    //向 MinIO 中上传文件
+    Route::rule("updateObject","UseFunction/updateObject","POST|GET");
+    //测试
     Route::rule("getObjectTest","UseFunction/getObjectTest","POST|GET");
 })->middleware(LoginCheck::class);
