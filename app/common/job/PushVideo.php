@@ -43,13 +43,14 @@ class PushVideo
                 'timeout'          => 600
             ]);
         }else {
-            echo "其他 环境",PHP_EOL;
-            die("暂未开发");
+            echo "其他 环境",PHP_EOL,"暂未开发",PHP_EOL;
+            die("结束任务");
         }
         $server = LiveServerModel::find(1)->toArray();
         $pushPath = $server["server_path"].$server["server_key"];
         $fileFullUrl = (new GetDataInMinIO())->getObject($videoUrl);
-        $fileUrl = "http://127.0.0.1:9000".strstr($fileFullUrl,"/v");
+        $minioHost = config("app.MinIO_Host");
+        $fileUrl = "http://".$minioHost.strstr($fileFullUrl,"/v");
         $video = $ffmpeg->open($fileUrl);
         //  参数
         $pushVideo = new X264();

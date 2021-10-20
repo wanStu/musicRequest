@@ -31,4 +31,6 @@ return [
     'show_error_msg'   => false,
 
     "password_key"     => "#music_request*",
+
+    "MinIO_Host"       => "172.17.0.3:9000",
 ];

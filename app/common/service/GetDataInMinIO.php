@@ -6,10 +6,11 @@ class GetDataInMinIO
 {
     protected $s3;
     public function __construct() {
+        $minioHost = config("app.MinIO_Host");
         $this->s3 = new S3Client([
             'version' => 'latest',
             'region' => 'cn-north-1',
-            'endpoint'  =>  '127.0.0.1:9000',
+            'endpoint'  =>  $minioHost,
             'use_path_style_endpoint' => true,
             'credentials' => [
                 'key'    => 'minioadmin',
