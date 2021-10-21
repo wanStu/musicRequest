@@ -19,6 +19,7 @@ use app\Request;
 use thans\jwt\facade\JWTAuth;
 use think\facade\Log;
 use think\facade\Queue;
+use app\common\service\User as UserService;
 use app\common\service\UserGroup as UserGroupService;
 class UseFunction extends Base
 {
@@ -29,6 +30,7 @@ class UseFunction extends Base
         bind("UpdateDataToMinIO",UpdateDataToMinIO::class);
         bind("UserGroupService",UserGroupService::class);
         bind("UserScore",UserScore::class);
+        bind("UserService",UserService::class);
         $this->userId = JWTAuth::auth()["user_id"]->getValue();
     }
     /**
@@ -114,7 +116,10 @@ class UseFunction extends Base
         if(!$result["data"]) {
             return returnAjax(100,$result["msg"],false);
         }
-
+        $score = json_decode(app("UserService")->getUserInfo($this->userId)->getContent(),true);
+        if(!($score["data"] && $score["data"]["score"] > 0)) {
+            return returnAjax(100,"您的积分不足",$score["data"]["score"]);
+        }
         if(!$videoInfo = VideoFileListModel::where("video_status",1)->find($video_id)) {
             return returnAjax(100,"您选择的视频异常",["video_id" => $video_id]);
         }else {
@@ -124,6 +129,7 @@ class UseFunction extends Base
         if($fileURL) {
             $releaseTaskResult = json_decode(app("Playlist")->addVideoToPlaylist($filePath,$this->userId)->getContent(),true);
             if($releaseTaskResult["data"]) {
+                app("UserScore")->addUserScore($this->userId,2);
                 Log::info("user_id:".$user_id." 点播 video_id:".$video_id);
                 return returnAjax(200,"点播完成，等待播放吧",true);
             } else {
@@ -376,6 +382,34 @@ class UseFunction extends Base
             return returnAjax(200,$deleteScoreSourceResult["msg"],true);
         }else {
             return returnAjax(100,$deleteScoreSourceResult["msg"],false);
+        }
+    }
+
+    public function addUserGroupToUser() {
+        if(empty($this->requestData["group_id"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $addUserGroupToUserResult = json_decode(app("UserService")->addUserGroupToUser($this->userId,$this->requestData["group_id"])->getContent(),true);
+        if($addUserGroupToUserResult) {
+            return returnAjax(200,$addUserGroupToUserResult["msg"],true);
+        }else {
+            return returnAjax(100,$addUserGroupToUserResult["msg"],false);
+        }
+    }
+
+    /**
+     * 添加积分
+     * @return \think\response\Json
+     */
+    public function addUserScore() {
+        if(empty($this->requestData["source_id"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $addUserScoreResult = json_decode((app("UserScore")->addUserScore($this->userId,$this->requestData["source_id"]))->getContent(),true);
+        if($addUserScoreResult["data"]) {
+            return returnAjax(200,$addUserScoreResult["msg"],true);
+        }else {
+            return returnAjax(100,$addUserScoreResult["msg"],false);
         }
     }
     /**

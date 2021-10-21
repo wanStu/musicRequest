@@ -16,7 +16,7 @@ class User extends BaseController
 
     /**
      * 验证用户输入是否合法
-     * @return \type
+     * @return \think\response\Json
      */
     protected function validateUser() {
         $rule = [
@@ -35,9 +35,10 @@ class User extends BaseController
         }
         return returnAjax(200,"符合条件",true);
     }
+
     /**
      * 用户登录
-     * @return \type
+     * @return \think\response\Json
      */
     public function userLogin() {
         $validateUserResult = json_decode($this->validateUser()->getContent(),true);
@@ -52,6 +53,10 @@ class User extends BaseController
         }
     }
 
+    /**
+     * 创建用户
+     * @return \think\response\Json
+     */
     public function createUser() {
         $validateUserResult = json_decode($this->validateUser()->getContent(),true);
         if(!$validateUserResult["data"]) {

@@ -79,6 +79,11 @@ Route::group("useFunction",function (){
     Route::rule("addScoreSource","UseFunction/addScoreSource","POST|GET");
     //删除 积分来源
     Route::rule("deleteScoreSource","UseFunction/deleteScoreSource","POST|GET");
+
+    //添加积分
+    Route::rule("addUserScore","UseFunction/addUserScore","POST|GET");
+    //给用户添加用户组
+    Route::rule("addUserGroupToUser","UseFunction/addUserGroupToUser","POST|GET");
     //测试
     Route::rule("Test","UseFunction/Test","POST|GET");
 })->middleware(LoginCheck::class);

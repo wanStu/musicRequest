@@ -3,9 +3,9 @@
 namespace app\common\service;
 
 use app\BaseController;
+use app\common\model\AuthGroupAccessModel;
 use app\common\model\UserModel;
 use thans\jwt\facade\JWTAuth;
-use think\exception\ValidateException;
 
 class User extends BaseController
 {
@@ -48,7 +48,7 @@ class User extends BaseController
         }else {
             $password = hash("sha256",config("app.password_key").md5($userPwd));
         }
-        $createUserResult = (new UserModel())->save(["user_name" => $userName,"user_pwd" => $password]);
+        $createUserResult = (new UserModel())->save(["user_name" => $userName,"user_pwd" => $password,"create_data" => date("Y/m/d H:i:s",time())]);
         if($createUserResult) {
             return returnAjax(200,"创建用户【".$userName."】成功",true);
         }else {
@@ -58,12 +58,12 @@ class User extends BaseController
 
     /**
      * 获取用户信息
-     * @param $user_id
+     * @param $userId
      */
-    public function getUserInfo($user_id) {
+    public function getUserInfo($userId) {
         $userInfoWhere = [];
-        if(!empty($user_id)) {
-            $userInfoWhere[] = ["user.user_id","=",$user_id];
+        if(!empty($userId)) {
+            $userInfoWhere[] = ["user.user_id","=",$userId];
         }else {
             return returnAjax(100,"参数错误：user_id",false);
         }
@@ -78,12 +78,12 @@ class User extends BaseController
 
     /**
      * 获取用户分数详情
-     * @param $user_id
+     * @param $userId
      */
-    public function getUserScoreInfo($user_id) {
+    public function getUserScoreInfo($userId) {
         $userScoreInfoWhere = [];
-        if(!empty($user_id)) {
-            $userScoreInfoWhere[] = ["user.user_id","=",$user_id];
+        if(!empty($userId)) {
+            $userScoreInfoWhere[] = ["user.user_id","=",$userId];
         }else {
             return returnAjax(100,"参数错误：user_id",false);
         }
@@ -93,6 +93,19 @@ class User extends BaseController
             ->field("user_name,source_name,score,user_score.create_date")
             ->select();
         return returnAjax(200,"获取成功",$userInfo);
+    }
+
+    public function addUserGroupToUser($userId,$userGroupId) {
+        $userGroupInfo = AuthGroupAccessModel::where("uid",$userId)->column("group_id");
+        if(in_array($userGroupId,$userGroupInfo)) {
+            return returnAjax(100,"添加失败，已经在该用户组中",false);
+        }
+        $addUserGroupToUserResult = (new AuthGroupAccessModel())->save(["uid" => $userId,"group_id" => $userGroupId]);
+        if($addUserGroupToUserResult) {
+            return returnAjax(200,"添加成功",true);
+        }else {
+            return returnAjax(100,"添加失败",false);
+        }
     }
 
 }
