@@ -42,7 +42,7 @@ class GetDataInMinIO
     /**
      * 获取 对象 列表
      * @param string $Bucket 要获取的桶名 默认 "video"
-     * @return \type
+     * @return \think\response\Json
      */
     public function getObjectList($Bucket = "video") {
         $bucketsList = json_decode($this->getBucketsList()->getContent(),true)["data"];

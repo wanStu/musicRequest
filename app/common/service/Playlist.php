@@ -4,7 +4,7 @@
 namespace app\common\service;
 use app\common\controller\Base;
 use app\common\model\JobsModel;
-use app\common\model\PlayListModel;
+use app\common\model\PlaylistModel;
 use think\facade\Queue;
 
 class Playlist extends Base
@@ -17,9 +17,9 @@ class Playlist extends Base
     {
         $fileNameArr = explode("/",$filePath);
         $fileName = end($fileNameArr);
-        $result = PlayListModel::where("is_delete",0)->where("file_path",$filePath)->find();
+        $result = PlaylistModel::where("is_delete",0)->where("file_path",$filePath)->find();
         if(!$result) {
-            $pushSuccess = PlayListModel::create(["file_name" => $fileName,"file_path" => $filePath,"user_id" => $userId]);
+            $pushSuccess = PlaylistModel::create(["file_name" => $fileName,"file_path" => $filePath,"user_id" => $userId]);
             if($pushSuccess){
                 return returnAjax(200,"$fileName 加入列表",true);
             }else {
