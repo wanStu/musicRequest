@@ -56,8 +56,13 @@ Route::group("useFunction",function (){
     Route::rule("getGroupInfoOnUser","UseFunction/getGroupInfoOnUser","POST|GET");
     //单独获取 用户组权限
     Route::rule("getPermissionListOnGroup","UseFunction/getPermissionListOnGroup","POST|GET");
+
     //单独获取 权限列表
     Route::rule("getPermissionList","UseFunction/getPermissionList","POST|GET");
+    //添加权限
+    Route::rule("addPermission","UseFunction/addPermission","POST|GET");
+    //禁用权限
+    Route::rule("deletePermission","UseFunction/deletePermission","POST|GET");
 
     //删除 MinIO中的文件
     Route::rule("deleteObject","UseFunction/deleteObject","POST|GET");

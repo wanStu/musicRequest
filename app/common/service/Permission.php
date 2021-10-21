@@ -107,7 +107,59 @@ class Permission extends Base
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function getPermissionList() {
-        return returnAjax(200,"获取成功",AuthRuleModel::field("id,title,status,type")->select());
+        $getPermissionListResult = AuthRuleModel::where("status",1)->field("id,title,type")->select();
+        if(false === $getPermissionListResult) {
+            return returnAjax(100,"获取失败",false);
+        }else {
+            return returnAjax(200,"获取成功",$getPermissionListResult);
+        }
+    }
+
+    /**
+     * 添加权限
+     * @param $title
+     * @param int $type
+     * @param string $condition
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function addPermission($name,$title,$type = 1,$condition = "") {
+        $ruleInfo = AuthRuleModel::where("name",$name)->find();
+        if($ruleInfo && 1 == $ruleInfo["status"]) {
+            return returnAjax(100,"创建失败,规则名已存在",false);
+        }else if($ruleInfo) {
+            $addPermissionResult = $ruleInfo->save(["title" => $title,"statu s" => 1,"type" => $type,"condition" => $condition]);
+        }else {
+            $addPermissionResult = (new AuthRuleModel())->save(["name" => $name,"title" => $title,"type" => $type,"condition" => $condition]);
+        }
+        if(false != $addPermissionResult) {
+            return returnAjax(200,"创建成功",true);
+        }else {
+            return returnAjax(100,"创建失败",false);
+        }
+    }
+
+    /**
+     * 删除权限
+     * @param $id
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function deletePermission($id) {
+        $ruleInfo = AuthRuleModel::where("id",$id)->where("status",1)->find();
+        if(!$ruleInfo) {
+            return returnAjax(100,"删除失败,规则不存在",false);
+        }
+        $deletePermissionResult = $ruleInfo->save(["status" => 0]);
+        if($deletePermissionResult) {
+            return returnAjax(200,"删除成功",true);
+        }else {
+            return returnAjax(200,"删除失败",true);
+        }
     }
     /**
      * 获取 用户权限列表

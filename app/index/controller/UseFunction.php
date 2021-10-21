@@ -215,11 +215,38 @@ class UseFunction extends Base
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function getPermissionList() {
-        $result = json_decode(app("Permission")->getPermissionList()->getContent(),true);
-        return returnAjax(200,$result["msg"],$result["data"]);
+        $getPermissionListResult = json_decode(app("Permission")->getPermissionList()->getContent(),true);
+        if($getPermissionListResult["data"]) {
+            return returnAjax(200,$getPermissionListResult["msg"],$getPermissionListResult["data"]);
+        }else {
+            return returnAjax(100,$getPermissionListResult["msg"],false);
+        }
     }
-
-
+    public function addPermission() {
+        if(empty($this->requestData["rule_name"])) {
+            return returnAjax(100,"规则标识 不能为空",false);
+        }
+        if(empty($this->requestData["rule_title"])) {
+            return returnAjax(100,"规则名 不能为空",false);
+        }
+        $addPermissionResult = json_decode(app("Permission")->addPermission($this->requestData["rule_name"],$this->requestData["rule_title"])->getContent(),true);
+        if($addPermissionResult["data"]) {
+            return returnAjax(200,$addPermissionResult["msg"],true);
+        }else {
+            return returnAjax(100,$addPermissionResult["msg"],false);
+        }
+    }
+    public function deletePermission() {
+        if(empty($this->requestData["rule_id"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $deletePermissionResult = json_decode((app("Permission")->deletePermission($this->requestData["rule_id"]))->getContent(),true);
+        if($deletePermissionResult["data"]) {
+            return returnAjax(200,$deletePermissionResult["msg"],true);
+        }else {
+            return returnAjax(100,$deletePermissionResult["msg"],false);
+        }
+    }
     public function updateObject() {
         if(empty($this->requestData["type"])) {
             return returnAjax(100,"类型 不能为空",false);
