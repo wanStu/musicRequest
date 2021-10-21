@@ -5,12 +5,14 @@ namespace app\index\controller;
 use app\common\model\PlaylistModel;
 use app\common\service\GetDataInDbServer;
 use app\common\service\UserGroup as UserGroupService;
+use app\common\service\UserScore;
 
 class GetInfoNoLogin
 {
     public function __construct() {
         bind("GetDataInDbServer",GetDataInDbServer::class);
         bind("UserGroupService",UserGroupService::class);
+        bind("UserScore",UserScore::class);
     }
     /**
      * 获取数据库中的音乐/视频列表
@@ -42,12 +44,29 @@ class GetInfoNoLogin
         return returnAjax(200,"获取成功",$result);
     }
 
+    /**
+     * 获取用户组列表
+     * @return \think\response\Json
+     */
     public function getUserGroupList() {
         $getUserGroupListResult = json_decode(app("UserGroupService")->getUserGroupList()->getContent(),true);
         if(false === $getUserGroupListResult["data"]) {
             return returnAjax(100,$getUserGroupListResult["msg"],false);
         }else {
             return returnAjax(200,$getUserGroupListResult["msg"],$getUserGroupListResult["data"]);
+        }
+    }
+
+    /**
+     * 获取积分来源列表
+     * @return \think\response\Json
+     */
+    public function getScoreSourceList() {
+        $getScoreSourceListResult = json_decode(app("UserScore")->getScoreSourceList()->getContent(),true);
+        if(false === $getScoreSourceListResult["data"]) {
+            return returnAjax(100,$getScoreSourceListResult["msg"],false);
+        }else {
+            return returnAjax(200,$getScoreSourceListResult["msg"],$getScoreSourceListResult["data"]);
         }
     }
 }

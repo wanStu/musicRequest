@@ -13,6 +13,7 @@ use app\common\service\GetDataInMinIO;
 use app\common\service\Permission;
 use app\common\service\Playlist;
 use app\common\service\UpdateDataToMinIO;
+use app\common\service\UserScore;
 use app\common\service\ValidateUser;
 use app\Request;
 use thans\jwt\facade\JWTAuth;
@@ -27,6 +28,7 @@ class UseFunction extends Base
         bind("ValidateUser",ValidateUser::class);
         bind("UpdateDataToMinIO",UpdateDataToMinIO::class);
         bind("UserGroupService",UserGroupService::class);
+        bind("UserScore",UserScore::class);
         $this->userId = JWTAuth::auth()["user_id"]->getValue();
     }
     /**
@@ -222,6 +224,11 @@ class UseFunction extends Base
             return returnAjax(100,$getPermissionListResult["msg"],false);
         }
     }
+
+    /**
+     * 添加权限
+     * @return \think\response\Json
+     */
     public function addPermission() {
         if(empty($this->requestData["rule_name"])) {
             return returnAjax(100,"规则标识 不能为空",false);
@@ -236,6 +243,11 @@ class UseFunction extends Base
             return returnAjax(100,$addPermissionResult["msg"],false);
         }
     }
+
+    /**
+     * 删除权限
+     * @return \think\response\Json
+     */
     public function deletePermission() {
         if(empty($this->requestData["rule_id"])) {
             return returnAjax(100,"参数错误",false);
@@ -247,6 +259,11 @@ class UseFunction extends Base
             return returnAjax(100,$deletePermissionResult["msg"],false);
         }
     }
+
+    /**
+     * 上传文件到minio
+     * @return \think\response\Json
+     */
     public function updateObject() {
         if(empty($this->requestData["type"])) {
             return returnAjax(100,"类型 不能为空",false);
@@ -293,6 +310,10 @@ class UseFunction extends Base
         }
     }
 
+    /**
+     * 新建用户组
+     * @return \think\response\Json
+     */
     public function createUserGroup() {
         if(empty($this->requestData["group_name"]) || empty($this->requestData["rule_id"])) {
             return returnAjax(100,"参数错误",false);
@@ -310,6 +331,10 @@ class UseFunction extends Base
         }
     }
 
+    /**
+     * 删除用户组
+     * @return \think\response\Json
+     */
     public function deleteUserGroup() {
         if(empty($this->requestData["group_id"])) {
             return returnAjax(100,"参数错误",false);
@@ -319,6 +344,38 @@ class UseFunction extends Base
             return returnAjax(200,$deleteUserGroupResult["msg"],true);
         }else {
             return returnAjax(100,$deleteUserGroupResult["msg"],false);
+        }
+    }
+
+    /**
+     * 添加积分来源
+     * @return \think\response\Json
+     */
+    public function addScoreSource() {
+        if(empty($this->requestData["source_name"]) || empty($this->requestData["source_detail"]) || empty($this->requestData["score"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $addScoreSourceResult = json_decode(app("UserScore")->addScoreSource($this->requestData["source_name"],$this->requestData["source_detail"],$this->requestData["score"])->getContent(),true);
+        if(false === $addScoreSourceResult["data"]) {
+            return returnAjax(100,$addScoreSourceResult["msg"],false);
+        }else {
+            return returnAjax(200,$addScoreSourceResult["msg"],true);
+        }
+    }
+
+    /**
+     * 删除积分来源
+     * @return \think\response\Json
+     */
+    public function deleteScoreSource() {
+        if(empty($this->requestData["source_id"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $deleteScoreSourceResult = json_decode((app("UserScore")->deleteScoreSource($this->requestData["source_id"]))->getContent(),true);
+        if($deleteScoreSourceResult["data"]) {
+            return returnAjax(200,$deleteScoreSourceResult["msg"],true);
+        }else {
+            return returnAjax(100,$deleteScoreSourceResult["msg"],false);
         }
     }
     /**

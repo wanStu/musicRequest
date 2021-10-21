@@ -20,10 +20,11 @@ class GetDataInDbServer
     public function __construct() {
         $this->requestData = request()->param();
     }
+
     /**
      * 获取数据库中的音乐/视频列表
      * @param string $type 类型 [music/video]
-     * @return array|string 以Array格式返回数据库中的音乐/视频列表
+     * @return \think\response\Json 以Array格式返回数据库中的音乐/视频列表
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException

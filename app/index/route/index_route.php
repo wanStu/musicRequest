@@ -17,6 +17,8 @@ Route::group("getInfo",function () {
     Route::rule("getFileList","GetInfoNoLogin/getFileList","POST|GET");
     //获取用户组列表
     Route::rule("getUserGroupList","GetInfoNoLogin/getUserGroupList","POST|GET");
+    //获取积分来源列表
+    Route::rule("getScoreSourceList","GetInfoNoLogin/getScoreSourceList","POST|GET");
 });
 
 
@@ -72,6 +74,11 @@ Route::group("useFunction",function (){
     Route::rule("createUserGroup","UseFunction/createUserGroup","POST|GET");
     //禁用用户组
     Route::rule("deleteUserGroup","UseFunction/deleteUserGroup","POST|GET");
+
+    //添加 积分来源
+    Route::rule("addScoreSource","UseFunction/addScoreSource","POST|GET");
+    //删除 积分来源
+    Route::rule("deleteScoreSource","UseFunction/deleteScoreSource","POST|GET");
     //测试
     Route::rule("Test","UseFunction/Test","POST|GET");
 })->middleware(LoginCheck::class);
