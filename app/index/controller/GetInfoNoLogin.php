@@ -2,14 +2,15 @@
 
 namespace app\index\controller;
 
+use app\common\controller\Base;
 use app\common\model\PlaylistModel;
 use app\common\service\GetDataInDbServer;
 use app\common\service\UserGroup as UserGroupService;
 use app\common\service\UserScore;
 
-class GetInfoNoLogin
+class GetInfoNoLogin extends Base
 {
-    public function __construct() {
+    public function initialize() {
         bind("GetDataInDbServer",GetDataInDbServer::class);
         bind("UserGroupService",UserGroupService::class);
         bind("UserScore",UserScore::class);

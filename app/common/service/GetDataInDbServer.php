@@ -40,7 +40,7 @@ class GetDataInDbServer
         }else {
             return returnAjax(100, "类型错误",false);
         }
-        $result = $db->where($type."_status",1)->field("video_id,video_author,video_name,video_dir")->select();
+        $result = $db->where($type."_status",1)->field("{$type}_id,{$type}_author,{$type}_name,{$type}_dir")->select();
         if($result) {
             return returnAjax(200,$result,true);
         }else {
