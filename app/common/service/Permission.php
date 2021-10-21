@@ -18,7 +18,6 @@ class Permission extends Base
      *  group_id int 用户组id
      *  rules[] array
      *      rules[*] int 规则id
-     * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -72,7 +71,6 @@ class Permission extends Base
      * 获取权限列表
      * @param Request
      *  group_id int 用户组id
-     * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -104,7 +102,6 @@ class Permission extends Base
 
     /**
      * 获取权限列表
-     * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -116,7 +113,6 @@ class Permission extends Base
      * 获取 用户权限列表
      * @param Request
      *  user_id 用户id
-     * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException

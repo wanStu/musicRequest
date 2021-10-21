@@ -5,7 +5,7 @@ namespace app\index\controller;
 
 
 use app\common\controller\Base;
-use app\common\model\JobsModel;
+use app\common\model\AuthRuleModel;
 use app\common\model\MusicFileListModel;
 use app\common\model\PlaylistModel;
 use app\common\model\VideoFileListModel;
@@ -18,8 +18,7 @@ use app\Request;
 use thans\jwt\facade\JWTAuth;
 use think\facade\Log;
 use think\facade\Queue;
-use Redis;
-
+use app\common\service\UserGroup as UserGroupService;
 class UseFunction extends Base
 {
     protected function initialize() {
@@ -27,6 +26,7 @@ class UseFunction extends Base
         bind("Playlist",Playlist::class);
         bind("ValidateUser",ValidateUser::class);
         bind("UpdateDataToMinIO",UpdateDataToMinIO::class);
+        bind("UserGroupService",UserGroupService::class);
         $this->userId = JWTAuth::auth()["user_id"]->getValue();
     }
     /**
@@ -94,7 +94,6 @@ class UseFunction extends Base
      * 将视频添加到播放列表
      * @param Request
      *  video_id 视频id
-     * @return string
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -153,7 +152,6 @@ class UseFunction extends Base
      *  group_id int 用户组id
      *  rules[] array
      *      rules[*] int 规则id
-     * @return \type
      */
     public function editPermissionToGroup() {
         $result = json_decode(app("Permission")->editPermissionToGroup()->getContent(),true);
@@ -169,7 +167,6 @@ class UseFunction extends Base
      * 获取用户的权限列表，同时返回用户组列表
      * @param Request
      *  user_id 用户id
-     * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -187,7 +184,6 @@ class UseFunction extends Base
      * 单独获取 用户组权限
      * @param Request
      *  group_id 用户组id
-     * @return \type
      */
     public function getPermissionListOnGroup() {
         $result = json_decode(app("Permission")->getPermissionListOnGroup()->getContent(),true);
@@ -202,7 +198,6 @@ class UseFunction extends Base
      * 单独获取 用户的用户组列表
      * @param Request
      *  user_id 用户id
-     * @return \type
      */
     public function getGroupInfoOnUser() {
         $result = json_decode(app("Permission")->getGroupInfoOnUser()->getContent(),true);
@@ -215,7 +210,6 @@ class UseFunction extends Base
 
     /**
      * 单独获取权限列表
-     * @return \type
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -233,15 +227,6 @@ class UseFunction extends Base
         if(empty($this->requestData["key"])) {
             $this->requestData["key"] = "/";
         }
-//        $data = request()->file("file");
-//        $jobClassName = "app\common\job\UploadToMinio";
-//        $jobQueueName = "UploadToMinioTask";
-//        $jobPushResult = Queue::push($jobClassName,$data,$jobQueueName);
-//        if($jobPushResult) {
-//            return returnAjax(200,"开始上传",true);
-//        }else {
-//            return returnAjax(100,"错误",false);
-//        }
         if(is_array(request()->file("file"))) {
             foreach (request()->file("file") as $value) {
                 $updateObjectResult[] = json_decode(app("UpdateDataToMinIO")->updateObject(fopen($value,"r"),$value->getOriginalName())->getContent(),true)["msg"];
@@ -257,7 +242,6 @@ class UseFunction extends Base
      * 删除文件
      * @param Request
      * ID 文件 id
-     * @return \type
      */
     public function deleteObject() {
         if(empty($this->requestData["type"])) {
@@ -282,10 +266,39 @@ class UseFunction extends Base
         }
     }
 
+    public function createUserGroup() {
+        if(empty($this->requestData["group_name"]) || empty($this->requestData["rule_id"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $rules = AuthRuleModel::where("status",1)->column("id");
+        if($ruleDiff = implode(",",array_diff($this->requestData["rule_id"],$rules))) {
+            return returnAjax(200,"规则错误：".$ruleDiff,true);
+        }
+        $ruleId = trim(implode(",",$this->requestData["rule_id"]),",");
+        $createUserGroupResult = json_decode((app("UserGroupService")->createUserGroup($this->requestData["group_name"],$ruleId))->getContent(),true);
+        if($createUserGroupResult["data"]) {
+            return returnAjax(200,$createUserGroupResult["msg"],true);
+        }else {
+            return returnAjax(100,$createUserGroupResult["msg"],false);
+        }
+    }
+
+    public function deleteUserGroup() {
+        if(empty($this->requestData["group_id"])) {
+            return returnAjax(100,"参数错误",false);
+        }
+        $deleteUserGroupResult = json_decode((app("UserGroupService")->deleteUserGroup($this->requestData["group_id"]))->getContent(),true);
+        if($deleteUserGroupResult["data"]) {
+            return returnAjax(200,$deleteUserGroupResult["msg"],true);
+        }else {
+            return returnAjax(100,$deleteUserGroupResult["msg"],false);
+        }
+    }
     /**
      * 测试方法 无用处
      */
     public function Test() {
+        phpinfo();
         dump(config("queue.default"));
     }
 }

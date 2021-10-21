@@ -26,7 +26,7 @@ return [
             // 服务器地址
             'hostname'        => env('database.hostname', '172.17.0.5'),
             // 数据库名
-            'database'        => env('database.database', ''),
+            'database'        => env('database.database', 'musicrequest'),
             // 用户名
             'username'        => env('database.username', 'root'),
             // 密码

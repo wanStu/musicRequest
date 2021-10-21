@@ -33,6 +33,9 @@ class GetDataInMinIO
             unset($value);
              $bucketsList = $bucketsList["Name"];
         }
+        if(!is_array($bucketsList)) {
+            $bucketsList = [$bucketsList];
+        }
         return returnAjax(200,"获取成功",$bucketsList);
     }
 
@@ -53,6 +56,9 @@ class GetDataInMinIO
                 $fileList = array_merge_recursive($value,$fileList);
             }
             unset($value);
+            if(!is_array($fileList)) {
+                $fileList = [$fileList];
+            }
             return returnAjax(200,"获取成功",$fileList["Key"]);
         }else {
             return returnAjax(200,"获取成功",[]);

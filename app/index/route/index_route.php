@@ -5,15 +5,18 @@ use think\facade\Route;
 
 
 Route::rule("index","/","POST|GET");
-Route::rule("userLogin","UserLogin/index","POST|GET");
+//用户登录
+Route::rule("userLogin","User/userLogin","POST|GET");
+Route::rule("createUser","User/createUser","POST|GET");
 //获取信息 无需登录
 Route::group("getInfo",function () {
     //getInfo
-    //获取文件列表
-    Route::rule("getFileList","GetInfo/getFileList","POST|GET");
-    Route::rule("getObjectList","GetInfo/getObjectList","POST|GET");
     //获取播放列表
-    Route::rule("getPlaylist","GetInfo/getPlaylist","POST|GET");
+    Route::rule("getPlaylist","GetInfoNoLogin/getPlaylist","POST|GET");
+    //获取文件列表
+    Route::rule("getFileList","GetInfoNoLogin/getFileList","POST|GET");
+    //获取用户组列表
+    Route::rule("getUserGroupList","GetInfoNoLogin/getUserGroupList","POST|GET");
 });
 
 
@@ -24,6 +27,7 @@ Route::group("getInfo",function () {
     Route::rule("getUserInfo","GetInfo/getUserInfo","POST|GET");
     //获取用户分数详情
     Route::rule("getUserScoreInfo","GetInfo/getUserScoreInfo","POST|GET");
+    Route::rule("getObjectList","GetInfo/getObjectList","POST|GET");
 })->middleware(LoginCheck::class);
 
 //操作 需要登陆
@@ -59,6 +63,10 @@ Route::group("useFunction",function (){
     Route::rule("deleteObject","UseFunction/deleteObject","POST|GET");
     //向 MinIO 中上传文件
     Route::rule("updateObject","UseFunction/updateObject","POST|GET");
+    //创建用户组
+    Route::rule("createUserGroup","UseFunction/createUserGroup","POST|GET");
+    //禁用用户组
+    Route::rule("deleteUserGroup","UseFunction/deleteUserGroup","POST|GET");
     //测试
     Route::rule("Test","UseFunction/Test","POST|GET");
 })->middleware(LoginCheck::class);
