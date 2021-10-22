@@ -44,12 +44,7 @@ class UpdateInfo extends Base
 
     /**
      * 更新数据库中状态非 -1(禁用) 的文件状态 若能在本地找到则状态为 1(正常) 找不到状态为 0(找不到资源)
-     * @param Request
-     *  type 类型
-     * @return false|string
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @return \think\response\Json
      */
     public function updateFileStatusInDb() {
         if(empty($this->requestData["type"])) {

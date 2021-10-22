@@ -17,9 +17,7 @@ class ValidateUser extends Base
      * 验证用户是否具有某项规则的权限
      * @param string $ruleName 规则名
      * @param int $user_id 用户ID
-     * @var array $ruleNameList 从数据库获取到所有规则名
-     * @var boolean $flag true 规则存在|false 不存在
-     * @return bool|string
+     * @return \think\response\Json
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
@@ -32,6 +30,11 @@ class ValidateUser extends Base
             $tempRuleList = array_merge_recursive($tempRuleList,$item);
         }
         $ruleNameList = $tempRuleList["name"];
+        if(false === $ruleNameList){
+            $ruleNameList = [];
+        }else if(!is_array($ruleNameList)) {
+            $ruleNameList = [$ruleNameList];
+        }
         $ruleExist = in_array($ruleName,$ruleNameList);
         if($ruleExist) {
             if ((Auth::instance())->check($ruleName, $user_id)) {

@@ -22,7 +22,6 @@ class UpdateFileInfoToDbServer extends Base
      * @param string $dir  歌曲文件路径（绝对路径）
      * @var string $dir 文件路径，默认为 （app()->getRootPath()."/public/static/<music/video>File"）
      * @var array $fileList 文件列表
-     * @return array|string $fileList|“文件夹有误” 返回歌曲文件列表|错误信息
      * $fileList = [
      *      序号 => 文件名,
      *      ......
@@ -92,6 +91,11 @@ class UpdateFileInfoToDbServer extends Base
         if (([] == $fileList )) {
             $fileList = json_decode((new GetDataInMinIO())->getObjectList($type)->getContent(),true)["data"];
         }
+        if(false === $fileList){
+            $fileList = [];
+        }else if(!is_array($fileList)) {
+            $fileList = [$fileList];
+        }
         foreach ($fileList as $item) {
             $fileDir = !empty(explode("/",$item,-1))?"/".implode("/",explode("/",$item,-1)):"/";
             $filePath = explode("/",$item);
@@ -129,10 +133,11 @@ class UpdateFileInfoToDbServer extends Base
         }
         return returnAjax(200,$msg,true);
     }
+
     /**
      * 更新数据库中状态非 -1(禁用) 的文件状态 若能在本地找到则状态为 1(正常) 找不到状态为 0(找不到资源)
      * @param string $type 类型 [music/video]
-     * @return array|string
+     * @return \think\response\Json
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
@@ -151,12 +156,18 @@ class UpdateFileInfoToDbServer extends Base
         }
         $fileList = $fileInfoTable->where($type."_status","<>",-1)->select();
         $MinioFileList = json_decode((new GetDataInMinIO())->getObjectList($type)->getContent(),true)["data"];
+        if(false === $MinioFileList){
+            $MinioFileList = [];
+        }else if(!is_array($MinioFileList)) {
+            $MinioFileList = [$MinioFileList];
+        }
         foreach ($fileList as $item) {
             if($item[$type."_author"] === "") {
                 $fullFileName = (("/" === $item[$type."_dir"])?"" : trim($item[$type."_dir"],"/")."/").$item[$type."_name"];
             }else {
                 $fullFileName = (("/" === $item[$type."_dir"])?"" : trim($item[$type."_dir"],"/")."/").$item[$type."_author"]." - ".$item[$type."_name"];
             }
+            dump($MinioFileList);
             if(in_array($fullFileName,$MinioFileList)) {
                 $fileInfoTable::update([$type."_status" => 1],[$type."_id" => $item[$type."_id"]]);
                 $msg["find"][] =  "【".$fullFileName."】"." 可以找到，状态修改为 1 ";

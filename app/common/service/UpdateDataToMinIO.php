@@ -25,10 +25,11 @@ class UpdateDataToMinIO
 
     /**
      * 上传对象
+     * @param Object $Body 要上传的文件
+     * @param $fileFullName
      * @param String $bucket 要被上传的桶名
-     * @param Object $Body   要上传的文件
-     * @param String $Key    要被上传的路径 默认 ”/“
-     * @return \type
+     * @param String $Key 要被上传的路径 默认 ”/“
+     * @return \think\response\Json
      */
     public function updateObject($Body,$fileFullName,$bucket="video",$Key = "/") {
         $bucketsList = json_decode(app("GetDataInMinIO")->getBucketsList()->getContent(),true)["data"];
@@ -42,6 +43,11 @@ class UpdateDataToMinIO
             }
         }
         $objectList = json_decode(app("GetDataInMinIO")->getObjectList($bucket)->getContent(),true)["data"];
+        if(false === $objectList){
+            $objectList = [];
+        }else if(!is_array($objectList)) {
+            $objectList = [$objectList];
+        }
         if(in_array(trim($Key.$fileFullName,"/"),$objectList)) {
             return returnAjax(100,$fileFullName." 已存在",false);
         }

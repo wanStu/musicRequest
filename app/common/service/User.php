@@ -97,6 +97,11 @@ class User extends BaseController
 
     public function addUserGroupToUser($userId,$userGroupId) {
         $userGroupInfo = AuthGroupAccessModel::where("uid",$userId)->column("group_id");
+        if(false === $userGroupInfo){
+            $userGroupInfo = [];
+        }else if(!is_array($userGroupInfo)) {
+            $userGroupInfo = [$userGroupInfo];
+        }
         if(in_array($userGroupId,$userGroupInfo)) {
             return returnAjax(100,"添加失败，已经在该用户组中",false);
         }

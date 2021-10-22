@@ -20,7 +20,7 @@ class GetDataInMinIO
 
     /**
      * 获取桶列表
-     * @return \type
+     * @return \think\response\Json
      */
     public function getBucketsList() {
         $bucketsList = [];
@@ -46,6 +46,11 @@ class GetDataInMinIO
      */
     public function getObjectList($Bucket = "video") {
         $bucketsList = json_decode($this->getBucketsList()->getContent(),true)["data"];
+        if(false === $bucketsList){
+            $bucketsList = [];
+        }else if(!is_array($bucketsList)) {
+            $bucketsList = [$bucketsList];
+        }
         if(!in_array($Bucket,$bucketsList)) {
             return returnAjax(200,"获取失败，类型错误",false);
         }
